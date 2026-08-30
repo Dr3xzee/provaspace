@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disputes — Provaspace</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+    <style>
+        .dispute-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .dispute-top { display: flex; justify-content: space-between; align-items: center; }
+        .dispute-title { font-weight: 700; font-size: 0.95rem; }
+        .dispute-reason { font-size: 0.85rem; color: var(--text-secondary); }
+        .dispute-meta { font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="logo.jpeg" width="20px" alt="">
+                <!-- <i class="fa-solid fa-layer-group brand-icon"></i> -->
+                <span>Provaspace</span>
+            </div>
+            <ul class="sidebar-menu" id="sidebarMenu"></ul>
+            <div class="sidebar-footer">
+                <div class="user-mini-card">
+                    <div class="avatar-sm" id="sidebarAvatar">?</div>
+                    <div class="user-info">
+                        <h4 id="sidebarName">User</h4>
+                        <p id="sidebarRole">—</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+                    <div class="mobile-brand">
+                        <img src="logo.jpeg" width="20px" alt="">
+                        <!-- <i class="fa-solid fa-layer-group brand-icon"></i> -->
+                        <span>Provaspace</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="icon-btn theme-toggle" id="themeToggle" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+                    <button class="icon-btn" id="backBtn" title="Back to Overview"><i class="fa-solid fa-house"></i></button>
+                </div>
+            </header>
+
+            <div class="dashboard-scroll">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1 style="font-size:1.4rem; font-weight:800;">Disputes</h1>
+                        <p style="color:var(--text-secondary); font-size:0.85rem;">Raise a dispute on an active or past contract, or track ones you've raised.</p>
+                    </div>
+                    <button class="activate-btn" id="raiseDisputeBtn" style="width:auto; padding:14px 22px;">
+                        <i class="fa-solid fa-plus"></i> Raise Dispute
+                    </button>
+                </div>
+
+                <div class="contracts-list" id="disputesList">
+                    <p class="empty-state" style="display:block;">Loading disputes...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <nav class="mobile-bottom-nav" id="bottomNav"></nav>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Notice</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"><p>Action processed successfully.</p></div>
+            <div class="modal-footer">
+                <button class="activate-btn" id="modalActionBtn">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/site-status.js"></script>
+    <script type="module" src="js/silver-surfer.js"></script>
+    <script type="module" src="js/disputes.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>

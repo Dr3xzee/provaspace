@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Gig — Provaspace</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+    <style>
+        /* Base Fallbacks & Enhancements */
+        :root {
+            --accent-blue: #4169E1;
+            --accent-blue-hover: #3154cb;
+            --accent-red: #ef4444;
+            --accent-gradient: linear-gradient(135deg, #4169E1, #6366f1);
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-main: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --ring-color: rgba(65, 105, 225, 0.15);
+        }
+
+        body { background-color: var(--bg-body); }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Layout & Header */
+        .post-gig-wrapper {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .post-gig-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 16px; 
+            margin-bottom: 8px; 
+        }
+
+        .back-link {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--bg-card); 
+            border: 2px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); text-decoration: none; flex-shrink: 0;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .back-link:hover {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+            transform: translateX(-4px);
+            box-shadow: 0 10px 15px -3px rgba(65, 105, 225, 0.3);
+        }
+
+        .post-gig-header h1 { 
+            font-size: 1.6rem; 
+            font-weight: 800; 
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        /* Card Container */
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 24px;
+            padding: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--border-color);
+        }
+
+        /* Labels & Typography */
+        .form-group label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        /* Universal Input Styling (Overrides inline styles beautifully) */
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            background: var(--bg-main) !important;
+            border: 2px solid var(--border-color) !important;
+            border-radius: 14px !important;
+            padding: 16px 18px !important;
+            color: var(--text-primary) !important;
+            font-size: 0.95rem !important;
+            font-family: inherit;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+
+        /* Plush Focus States */
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus { 
+            outline: none; 
+            border-color: var(--accent-blue) !important; 
+            background: #ffffff !important;
+            box-shadow: 0 0 0 4px var(--ring-color) !important;
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media(max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+
+        /* Milestones Section */
+        .milestones-box {
+            background: var(--bg-main);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: var(--transition);
+        }
+        
+        .milestones-box:focus-within {
+            border-color: #cbd5e1;
+            background: #ffffff;
+        }
+
+        .milestone-row { display: flex; gap: 12px; align-items: center; }
+        .milestone-row input { flex: 1; padding: 12px 16px !important; }
+        .milestone-row .milestone-percent { max-width: 100px; text-align: center; }
+        
+        .remove-milestone-btn {
+            background: #fee2e2; border: none; color: var(--accent-red);
+            cursor: pointer; font-size: 1.1rem; width: 40px; height: 40px;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .remove-milestone-btn:hover {
+            background: var(--accent-red);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .add-milestone-btn {
+            background: transparent;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 14px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .add-milestone-btn:hover { 
+            border-color: var(--accent-blue); 
+            color: var(--accent-blue);
+            background: var(--ring-color);
+        }
+
+        .milestone-total {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* Sleek Toggle Row */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+        }
+        
+        .toggle-row:hover {
+            border-color: #cbd5e1;
+        }
+
+        .toggle-row-text h4 { font-size: 1rem; font-weight: 800; margin-bottom: 4px; color: var(--text-primary); display:flex; align-items:center; gap: 8px;}
+        .toggle-row-text h4 i { color: var(--accent-blue); }
+        .toggle-row-text p { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;}
+
+        /* iOS Style Switch */
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: #cbd5e1;
+            border-radius: 30px;
+            transition: var(--transition);
+        }
+        .slider::before {
+            position: absolute; content: "";
+            height: 22px; width: 22px; left: 4px; bottom: 4px;
+            background: white; border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background: var(--accent-gradient); }
+        input:checked + .slider::before { transform: translateX(22px); }
+
+        /* Custom Checkbox Alignment */
+        .checkbox-row { display: flex; align-items: flex-start; gap: 12px; margin-top: 4px; }
+        .checkbox-row input { 
+            margin-top: 3px; 
+            width: 18px; 
+            height: 18px; 
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+        .checkbox-row label { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; cursor: pointer; }
+
+        /* Master Submit Button */
+        .auth-submit-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+            box-shadow: 0 10px 20px -5px rgba(65, 105, 225, 0.4);
+            margin-top: 8px;
+        }
+
+        .auth-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(65, 105, 225, 0.5);
+            background: linear-gradient(135deg, #3154cb, #4f46e5);
+        }
+        
+        .auth-submit-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <main class="main-content" style="margin-left: 0;">
+            <div class="post-gig-wrapper">
+                <div class="post-gig-header">
+                    <a href="client-dashboard.html" class="back-link"><i class="fa-solid fa-arrow-left"></i></a>
+                    <h1>Post a New Gig</h1>
+                </div>
+
+                <form class="form-card" id="postGigForm">
+
+                    <div class="form-group">
+                        <label for="gigTitle">Gig Title</label>
+                        <input type="text" id="gigTitle" placeholder="e.g. Design a logo for my startup" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gigCategory">Category</label>
+                        <select id="gigCategory" required style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; color: var(--text-primary); font-size: 0.92rem;">
+                            <option value="Design">Design</option>
+                            <option value="Development">Development</option>
+                            <option value="Writing">Writing</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Video">Video</option>
+                            <option value="Admin/Support">Admin/Support</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gigDescription">Detailed Job Description</label>
+                        <textarea id="gigDescription" placeholder="Describe exactly what you need done, requirements, and expectations..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gigPrice">Total Price (₦)</label>
+                            <input type="number" id="gigPrice" placeholder="50000" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="gigDeposit">Initial Deposit (₦)</label>
+                            <input type="number" id="gigDeposit" placeholder="e.g. half of total price" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gigDuration">Time Allowed</label>
+                            <input type="number" id="gigDuration" placeholder="e.g. 5" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="gigDurationUnit">Unit</label>
+                            <select id="gigDurationUnit" style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; color: var(--text-primary); font-size: 0.92rem;">
+                                <option value="hours">Hours</option>
+                                <option value="days" selected>Days</option>
+                                <option value="weeks">Weeks</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Milestones -->
+                    <div class="form-group">
+                        <label>Milestones & Payout Split</label>
+                        <div class="milestones-box" id="milestonesBox">
+                            <div class="milestone-row">
+                                <input type="text" placeholder="Milestone name (e.g. Initial concept)" class="milestone-name">
+                                <input type="number" placeholder="%" class="milestone-percent" min="0" max="100">
+                                <button type="button" class="remove-milestone-btn"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" class="add-milestone-btn" id="addMilestoneBtn">
+                            <i class="fa-solid fa-plus"></i> Add Milestone
+                        </button>
+                        <p class="milestone-total" id="milestoneTotal">Total: 0% (must equal 100%)</p>
+                    </div>
+
+                    <!-- Insurance toggle -->
+                    <div class="toggle-row">
+                        <div class="toggle-row-text">
+                            <h4><i class="fa-solid fa-shield-halved"></i> Add Insurance</h4>
+                            <p id="insuranceFeeText">Loading current insurance fee...</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="insuranceToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="form-group">
+                        <label for="gigTerms">Terms & Conditions (specific to this gig, optional)</label>
+                        <textarea id="gigTerms" placeholder="Any extra rules or expectations specific to this job..."></textarea>
+                    </div>
+
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <label for="agreeTerms">I agree to Provaspace's platform terms, including escrow handling and milestone-based release of funds.</label>
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn" style="width: 100%;">
+                        <i class="fa-solid fa-square-plus"></i> Post Gig
+                    </button>
+
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/site-status.js"></script>
+    <script type="module" src="js/silver-surfer.js"></script>
+    <script type="module" src="js/post-gig.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>

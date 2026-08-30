@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In — Provaspace</title>
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+    <style>
+        /* Base Reset & Variables */
+:root {
+    --accent-blue: #4169E1;
+    --bg-color: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #cbd5e1;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+/* Auth Wrapper: Mobile First (Stack layout) */
+.auth-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Mobile: Top 30% for Image/Banner */
+.auth-image-side {
+    height: 30vh;
+    width: 100%;
+    background: linear-gradient(135deg, #1e3a8a, #4169E1);
+    background-image: url('login.jpeg'); /* Optional: Swap with real image path */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+}
+
+.auth-image-side::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.8), transparent);
+}
+
+.auth-image-content {
+    position: relative;
+    z-index: 2;
+    color: #ffffff;
+}
+
+.auth-image-content h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.auth-image-content p {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    display: none; /* Hide long paragraph on small mobile screens to save space */
+}
+
+/* Mobile: Bottom 70% for Form */
+.auth-form-side {
+    height: 70vh;
+    width: 100%;
+    background: #ffffff;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 16px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Desktop Styles (Screens >= 768px) */
+@media (min-width: 768px) {
+    .auth-wrapper {
+        flex-direction: row; /* Split in 2 side-by-side */
+    }
+
+    .auth-image-side {
+        height: 100vh;
+        width: 50%;
+        align-items: center;
+        padding: 60px;
+    }
+
+    .auth-image-content h2 {
+        font-size: 2.2rem;
+        margin-bottom: 12px;
+    }
+
+    .auth-image-content p {
+        display: block; /* Show description text on desktop */
+        font-size: 1rem;
+    }
+
+    .auth-form-side {
+        height: 100vh;
+        width: 50%;
+        align-items: center;
+        padding: 40px;
+    }
+}
+
+/* Additional form element helper styles (if not already present) */
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: 24px;
+    color: var(--text-main);
+}
+
+.brand-icon {
+    color: var(--accent-blue);
+}
+
+.auth-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    outline: none;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: var(--accent-blue);
+}
+
+.auth-submit-btn {
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.auth-submit-btn:hover {
+    background-color: #3154cb;
+}
+
+.auth-divider {
+    text-align: center;
+    margin: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    position: relative;
+}
+
+.google-btn {
+    width: 100%;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.auth-footer-text {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.auth-footer-text a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+}
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-image-side">
+            <div class="auth-image-content">
+                <h2>Build the future with Provaspace.</h2>
+                <p>Manage your workspaces, collaborate with your team, and track your goals seamlessly in one place.</p>
+            </div>
+        </div>
+
+        <div class="auth-form-side">
+            <div class="auth-card">
+                <div class="auth-brand">
+                    <!-- <i class="fa-solid fa-layer-group brand-icon"></i> -->
+                     <img width="40px" src="logo.jpeg" alt="">
+                    <span>Provaspace</span>
+                </div>
+                <h1 class="auth-title">Welcome back</h1>
+                <p class="auth-subtitle">Log in to continue to your dashboard</p>
+
+                <div class="form-error" id="formError"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 14px; margin-bottom: 6px;">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Your password" required>
+                    </div>
+
+                    <p style="text-align:right; font-size:0.8rem;">
+                        <a href="#" id="forgotPasswordLink" style="color: var(--accent-blue); text-decoration:none; font-weight:600;">Forgot password?</a>
+                    </p>
+
+                    <button type="submit" class="auth-submit-btn" style="width:100%; margin-top: 16px;">
+                        Log In
+                    </button>
+                </form>
+
+                <div class="auth-divider">or</div>
+
+                <button class="google-btn" id="googleLoginBtn">
+                    <i class="fa-brands fa-google"></i> Continue with Google
+                </button>
+
+                <p class="auth-footer-text">
+                    Don't have an account? <a href="signup.html">Sign up</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/auth.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>

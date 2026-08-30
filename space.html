@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Space — Provaspace</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+    <style>
+        .space-search-bar {
+            display: flex; gap: 10px; align-items: center;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 8px 8px 8px 18px;
+        }
+        .space-search-bar i { color: var(--text-secondary); }
+        .space-search-bar input {
+            flex: 1; background: transparent; border: none; outline: none;
+            color: var(--text-primary); font-size: 0.95rem; padding: 10px 0;
+        }
+        .space-search-bar button {
+            background: var(--accent-gradient); color: white; border: none;
+            border-radius: 12px; padding: 10px 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+        }
+        .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-chip {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600;
+            color: var(--text-secondary); cursor: pointer; transition: var(--transition);
+        }
+        .filter-chip.active { background: var(--accent-gradient); color: white; border-color: transparent; }
+        .space-results-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+        }
+        @media(max-width: 900px) { .space-results-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media(max-width: 600px) { .space-results-grid { grid-template-columns: 1fr; } }
+        .listing-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 10px;
+            cursor: pointer; transition: var(--transition);
+        }
+        .listing-card:hover { transform: translateY(-3px); border-color: var(--accent-blue); }
+        .listing-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .listing-title { font-weight: 700; font-size: 0.98rem; }
+        .listing-sub { font-size: 0.78rem; color: var(--text-secondary); }
+        .listing-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .listing-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .listing-price { font-weight: 800; color: var(--accent-blue); }
+        .bookmark-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.1rem; cursor: pointer; }
+        .bookmark-btn.saved { color: var(--accent-blue); }
+        .listing-avatar {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--accent-gradient); color: white;
+            display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-layer-group brand-icon"></i>
+                <span>Provaspace</span>
+            </div>
+            <ul class="sidebar-menu" id="sidebarMenu">
+                <!-- populated by space.js based on role -->
+            </ul>
+            <div class="sidebar-footer">
+                <div class="user-mini-card">
+                    <div class="avatar-sm" id="sidebarAvatar">?</div>
+                    <div class="user-info">
+                        <h4 id="sidebarName">User</h4>
+                        <p id="sidebarRole">—</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+                    <div class="mobile-brand">
+                        <!-- <i class="fa-solid fa-layer-group brand-icon"></i> -->
+                         <img width="40px" src="logo.jpeg" alt="">
+                        <span>Provaspace</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="icon-btn theme-toggle" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="icon-btn" id="backBtn" title="Back to Overview">
+                        <i class="fa-solid fa-house"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-scroll">
+
+                <h1 style="font-size:1.4rem; font-weight:800;" id="spaceTitle">The Space</h1>
+                <p style="color:var(--text-secondary); font-size:0.88rem; margin-top:-14px;" id="spaceSubtitle">Browse and search open gigs.</p>
+
+                <div class="space-search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Search by keyword...">
+                    <button id="searchBtn">Search</button>
+                </div>
+
+                <div class="filter-chips" id="filterChips">
+                    <button class="filter-chip active" data-filter="all">All</button>
+                </div>
+
+                <div class="space-results-grid" id="resultsGrid">
+                    <p class="empty-state" style="display:block; grid-column: 1 / -1;">Loading...</p>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <nav class="mobile-bottom-nav" id="bottomNav"></nav>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Notice</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"><p>Action processed successfully.</p></div>
+            <div class="modal-footer">
+                <button class="activate-btn" id="modalActionBtn">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/site-status.js"></script>
+    <script type="module" src="js/silver-surfer.js"></script>
+    <script type="module" src="js/space.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>

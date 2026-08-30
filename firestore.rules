@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(uid);
+      // TODO: lock this down further — a user should not be able to edit their own
+      // walletBalance, trustScore, taxPass.gigsRemaining, isAdmin, suspended, etc.
+      // Those fields should only change via Cloud Functions / admin writes.
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /gigs/{gigId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn(); // TODO: also verify request.resource.data.postedBy == request.auth.uid
+      allow update: if isSignedIn(); // TODO: restrict — only postedBy or claimedBy should update, and only specific fields
+      allow delete: if isAdmin();
+    }
+
+    match /contracts/{contractId} {
+      allow read: if isSignedIn(); // TODO: restrict to resource.data.clientId/freelancerId == request.auth.uid, or isAdmin()
+      allow create: if isSignedIn();
+      allow update: if isSignedIn(); // TODO: restrict per-field (only clientId can release milestones, etc.)
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn(); // TODO: restrict to a party on the parent contract
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // Support tickets — Silver Surfer handoffs + direct user requests.
+    match /supportTickets/{ticketId} {
+      allow read: if isSignedIn(); // TODO: restrict to resource.data.userId == request.auth.uid, or isAdmin()
+      allow create: if isSignedIn();
+      allow update: if isAdmin(); // only admin closes/reassigns a ticket; message subcollection below tracks lastMessageAt separately
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // In-app notifications (personal + broadcast via userId == 'all').
+    match /notifications/{notifId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn(); // TODO: restrict broadcast creation (userId == 'all') to isAdmin()
+      allow update: if isSignedIn(); // needed so users can mark their own notification read / add themselves to readBy
+      allow delete: if isAdmin();
+    }
+
+    match /disputes/{disputeId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if isSignedIn(); // prices need to be readable by everyone to show on dashboards
+      allow write: if isAdmin();
+    }
+  }
+}
+
+// TODO: This is a starting point, not production-ready. Before launch:
+// 1. Lock down /users so people can't edit their own walletBalance/trustScore/etc.
+// 2. Move money-moving operations (milestone release, tax pass decrement, rent payment
+//    confirmation) into Cloud Functions triggered by verified Paystack webhooks —
+//    do not trust client writes for anything involving real money.
+// 3. Add field-level validation (request.resource.data.keys().hasOnly([...])) to every
+//    collection above.

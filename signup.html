@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up — Provaspace</title>
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+    <style>
+        /* Base Reset & Variables */
+:root {
+    --accent-blue: #4169E1;
+    --accent-blue-hover: #3154cb;
+    --bg-color: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #cbd5e1;
+    --card-bg: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+/* Auth Wrapper: Mobile First Stack layout */
+.auth-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Mobile: Top 30% for Image/Banner Side */
+.auth-image-side {
+    height: 30vh;
+    width: 100%;
+    background: linear-gradient(135deg, #1e3a8a, #4169E1);
+    background-image: url('login.jpeg'); /* Optional: Swap with your asset */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+    flex-shrink: 0;
+}
+
+.auth-image-side::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.2));
+}
+
+.auth-image-content {
+    position: relative;
+    z-index: 2;
+    color: #ffffff;
+}
+
+.auth-image-content h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.auth-image-content p {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    display: none; /* Hidden on short mobile views to prioritize scrollable form space */
+}
+
+/* Mobile: Bottom 70% for Form Side */
+.auth-form-side {
+    height: 70vh;
+    width: 100%;
+    background: var(--card-bg);
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 16px 40px 16px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+/* Role Toggle Switcher Style */
+.role-toggle {
+    display: flex;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+}
+
+.role-toggle button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.role-toggle button.active {
+    background: #ffffff;
+    color: var(--accent-blue);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Desktop Split Layout (Screens >= 768px) */
+@media (min-width: 768px) {
+    .auth-wrapper {
+        flex-direction: row; /* Side-by-side split */
+    }
+
+    .auth-image-side {
+        height: 100vh;
+        width: 50%;
+        align-items: center;
+        padding: 60px;
+    }
+
+    .auth-image-content h2 {
+        font-size: 2.2rem;
+        margin-bottom: 12px;
+    }
+
+    .auth-image-content p {
+        display: block; /* Visible on desktop */
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .auth-form-side {
+        height: 100vh;
+        width: 50%;
+        align-items: center;
+        padding: 40px;
+    }
+}
+
+/* Typography & Layout Helpers */
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+
+.brand-icon {
+    color: var(--accent-blue);
+}
+
+.auth-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    outline: none;
+    font-size: 0.92rem;
+    transition: border-color 0.2s;
+    background: #ffffff;
+}
+
+.form-group input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+}
+
+.auth-submit-btn {
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+.auth-submit-btn:hover {
+    background-color: var(--accent-blue-hover);
+}
+
+.auth-divider {
+    text-align: center;
+    margin: 16px 0;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    position: relative;
+}
+
+.google-btn {
+    width: 100%;
+    padding: 11px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.92rem;
+    transition: background-color 0.2s;
+}
+
+.google-btn:hover {
+    background-color: #f8fafc;
+}
+
+.auth-footer-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.auth-footer-text a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.form-error {
+    color: #ef4444;
+    font-size: 0.82rem;
+    margin-bottom: 12px;
+}
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-image-side">
+            <div class="auth-image-content">
+                <h2>Join the Provaspace network.</h2>
+                <p>Connect with elite talent or hire top-tier freelancers to bring your creative and technical visions to life.</p>
+            </div>
+        </div>
+
+        <div class="auth-form-side">
+            <div class="auth-card">
+                <div class="auth-brand">
+                    <!-- <i class="fa-solid fa-layer-group brand-icon"></i> -->
+                     <img width="40px" src="logo.jpeg" alt="">
+                    <span>Provaspace</span>
+                </div>
+                <h1 class="auth-title">Create your account</h1>
+                <p class="auth-subtitle">Choose how you want to use Provaspace</p>
+
+                <div class="role-toggle">
+                    <button type="button" class="active" id="roleFreelancer" data-role="freelancer">
+                        <i class="fa-solid fa-user-tie"></i> Freelancer
+                    </button>
+                    <button type="button" id="roleClient" data-role="client">
+                        <i class="fa-solid fa-building"></i> Client
+                    </button>
+                </div>
+
+                <div class="form-error" id="formError"></div>
+
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="fullName" id="nameLabel">Full Name</label>
+                        <input type="text" id="fullName" placeholder="e.g. Chidinma Okafor" required>
+                    </div>
+
+                    <div class="form-group" id="companyNameGroup" style="display:none; margin-top: 14px;">
+                        <label for="companyName">Company Name <span style="font-weight:400; color:var(--text-muted);">(optional)</span></label>
+                        <input type="text" id="companyName" placeholder="e.g. Addro Digital Ltd">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 14px;">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 14px;">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="080XXXXXXXX" required>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 14px;">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Min. 8 characters" required minlength="8">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 14px; margin-bottom: 6px;">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Re-enter password" required minlength="8">
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn" style="width:100%; margin-top: 16px;">
+                        Create Account
+                    </button>
+                </form>
+
+                <div class="auth-divider">or</div>
+
+                <button class="google-btn" id="googleSignupBtn">
+                    <i class="fa-brands fa-google"></i> Continue with Google
+                </button>
+
+                <p class="auth-footer-text">
+                    Already have an account? <a href="login.html">Log in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/auth.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>

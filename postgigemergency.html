@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Gig — Provaspace</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+    <style>
+        .post-gig-wrapper {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .post-gig-header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+        .back-link {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-primary); text-decoration: none; flex-shrink: 0;
+        }
+        .post-gig-header h1 { font-size: 1.3rem; font-weight: 800; }
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .form-group textarea {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-size: 0.92rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-group textarea:focus { outline: none; border-color: var(--accent-blue); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media(max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+        .milestones-box {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .milestone-row { display: flex; gap: 10px; align-items: center; }
+        .milestone-row input { flex: 1; }
+        .milestone-row .milestone-percent { max-width: 90px; }
+        .remove-milestone-btn {
+            background: none; border: none; color: var(--accent-red);
+            cursor: pointer; font-size: 1.1rem; width: 32px;
+        }
+        .add-milestone-btn {
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            color: var(--accent-blue);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .add-milestone-btn:hover { border-color: var(--accent-blue); }
+        .milestone-total {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        .toggle-row-text h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+        .toggle-row-text p { font-size: 0.78rem; color: var(--text-secondary); }
+        .switch {
+            position: relative;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: var(--border-color);
+            border-radius: 26px;
+            transition: var(--transition);
+        }
+        .slider::before {
+            position: absolute; content: "";
+            height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background: white; border-radius: 50%;
+            transition: var(--transition);
+        }
+        input:checked + .slider { background: var(--accent-gradient); }
+        input:checked + .slider::before { transform: translateX(20px); }
+        .checkbox-row { display: flex; align-items: flex-start; gap: 10px; }
+        .checkbox-row input { margin-top: 3px; }
+        .checkbox-row label { font-size: 0.82rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <main class="main-content" style="margin-left: 0;">
+            <div class="post-gig-wrapper">
+                <div class="post-gig-header">
+                    <a href="client-dashboard.html" class="back-link"><i class="fa-solid fa-arrow-left"></i></a>
+                    <h1>Post a New Gig</h1>
+                </div>
+
+                <form class="form-card" id="postGigForm">
+
+                    <div class="form-group">
+                        <label for="gigTitle">Gig Title</label>
+                        <input type="text" id="gigTitle" placeholder="e.g. Design a logo for my startup" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gigCategory">Category</label>
+                        <select id="gigCategory" required style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; color: var(--text-primary); font-size: 0.92rem;">
+                            <option value="Design">Design</option>
+                            <option value="Development">Development</option>
+                            <option value="Writing">Writing</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Video">Video</option>
+                            <option value="Admin/Support">Admin/Support</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gigDescription">Detailed Job Description</label>
+                        <textarea id="gigDescription" placeholder="Describe exactly what you need done, requirements, and expectations..." required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gigPrice">Total Price (₦)</label>
+                            <input type="number" id="gigPrice" placeholder="50000" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="gigDeposit">Initial Deposit (₦)</label>
+                            <input type="number" id="gigDeposit" placeholder="e.g. half of total price" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gigDuration">Time Allowed</label>
+                            <input type="number" id="gigDuration" placeholder="e.g. 5" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="gigDurationUnit">Unit</label>
+                            <select id="gigDurationUnit" style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; color: var(--text-primary); font-size: 0.92rem;">
+                                <option value="hours">Hours</option>
+                                <option value="days" selected>Days</option>
+                                <option value="weeks">Weeks</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Milestones -->
+                    <div class="form-group">
+                        <label>Milestones & Payout Split</label>
+                        <div class="milestones-box" id="milestonesBox">
+                            <div class="milestone-row">
+                                <input type="text" placeholder="Milestone name (e.g. Initial concept)" class="milestone-name">
+                                <input type="number" placeholder="%" class="milestone-percent" min="0" max="100">
+                                <button type="button" class="remove-milestone-btn"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" class="add-milestone-btn" id="addMilestoneBtn">
+                            <i class="fa-solid fa-plus"></i> Add Milestone
+                        </button>
+                        <p class="milestone-total" id="milestoneTotal">Total: 0% (must equal 100%)</p>
+                    </div>
+
+                    <!-- Insurance toggle -->
+                    <div class="toggle-row">
+                        <div class="toggle-row-text">
+                            <h4><i class="fa-solid fa-shield-halved"></i> Add Insurance</h4>
+                            <p id="insuranceFeeText">Loading current insurance fee...</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="insuranceToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="form-group">
+                        <label for="gigTerms">Terms & Conditions (specific to this gig, optional)</label>
+                        <textarea id="gigTerms" placeholder="Any extra rules or expectations specific to this job..."></textarea>
+                    </div>
+
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <label for="agreeTerms">I agree to Provaspace's platform terms, including escrow handling and milestone-based release of funds.</label>
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn" style="width: 100%;">
+                        <i class="fa-solid fa-square-plus"></i> Post Gig
+                    </button>
+
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/site-status.js"></script>
+    <script type="module" src="js/silver-surfer.js"></script>
+    <script type="module" src="js/post-gig.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>

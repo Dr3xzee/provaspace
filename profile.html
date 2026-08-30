@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Profile — Provaspace</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+    <style>
+        :root {
+            --primary: #4169E1;
+            --primary-light: #5a7ff7;
+            --primary-dark: #3451b2;
+            --primary-glow: rgba(65, 105, 225, 0.12);
+            --accent-green: #22c55e;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-hover: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --radius-sm: 10px;
+            --radius: 14px;
+            --radius-lg: 18px;
+            --radius-xl: 24px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0b1121;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border: #334155;
+            --border-light: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Layout ── */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .post-gig-wrapper {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            width: 100%;
+        }
+
+        /* ── Header ── */
+        .post-gig-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 4px;
+        }
+
+        .back-link {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            flex-shrink: 0;
+            font-size: 1rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .back-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.15);
+        }
+
+        .post-gig-header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .post-gig-header p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ── Progress Steps ── */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .step-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .step.active .step-dot {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .step.active {
+            color: var(--primary);
+        }
+
+        .step.completed .step-dot {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .step.completed {
+            color: var(--accent-green);
+        }
+
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+            max-width: 40px;
+            transition: var(--transition);
+        }
+
+        .step-line.active {
+            background: linear-gradient(90deg, var(--accent-green), var(--primary));
+        }
+
+        /* ── Form Cards ── */
+        .form-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            transition: var(--transition);
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .form-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--border);
+        }
+
+        .form-card:nth-child(3) { animation-delay: 0.08s; }
+        .form-card:nth-child(4) { animation-delay: 0.16s; }
+        .form-card:nth-child(5) { animation-delay: 0.24s; }
+
+        /* ── Section Labels ── */
+        .form-section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: -8px;
+        }
+
+        .form-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
+        }
+
+        /* ── Form Groups ── */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group label .optional {
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 14px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: var(--transition);
+            outline: none;
+            width: 100%;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .form-group input:hover,
+        .form-group textarea:hover,
+        .form-group select:hover {
+            border-color: var(--text-muted);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            background: var(--surface);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .form-group input:disabled {
+            background: var(--border-light);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        /* ── Avatar Upload ── */
+        .avatar-upload-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(65, 105, 225, 0.04), rgba(139, 92, 246, 0.02));
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .avatar-upload-row:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(65, 105, 225, 0.08), rgba(139, 92, 246, 0.04));
+        }
+
+        .avatar-upload-row.dragover {
+            border-color: var(--primary);
+            background: var(--primary-glow);
+            transform: scale(1.01);
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.75rem;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(65, 105, 225, 0.3);
+            border: 3px solid white;
+            transition: var(--transition);
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-btn-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 18px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .upload-btn-label:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* ── Verification Badges ── */
+        .verify-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .verify-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-amber);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .verify-approved {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .verify-none {
+            background: var(--bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* ── NIN Section ── */
+        #ninStatusBox {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .nin-info-card {
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .nin-info-card i {
+            width: 40px;
+            height: 40px;
+            background: rgba(65, 105, 225, 0.1);
+            color: var(--primary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nin-info-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ── Helper Text ── */
+        .helper-text {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .helper-text i {
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-size: 0.875rem;
+        }
+
+        /* ── Submit Button ── */
+        .auth-submit-btn {
+            width: 100%;
+            padding: 18px 28px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.35);
+            letter-spacing: -0.01em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-submit-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.15));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .auth-submit-btn:hover::before {
+            opacity: 1;
+        }
+
+        .auth-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(65, 105, 225, 0.45);
+        }
+
+        .auth-submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 440px;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.92) translateY(20px);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 28px 28px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.125rem;
+            font-weight: 800;
+        }
+
+        .close-modal {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            background: var(--border);
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px 28px 28px;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.7;
+        }
+
+        .modal-footer {
+            padding: 0 28px 28px;
+        }
+
+        .activate-btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .activate-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 100px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* ═══════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════ */
+        @media (max-width: 640px) {
+            .post-gig-wrapper {
+                padding: 24px 16px 60px;
+                gap: 20px;
+            }
+
+            .post-gig-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .progress-steps {
+                gap: 4px;
+            }
+
+            .step span {
+                display: none;
+            }
+
+            .step-line {
+                max-width: 20px;
+            }
+
+            .form-card {
+                padding: 24px 20px;
+                gap: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .avatar-upload-row {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .avatar-preview {
+                width: 72px;
+                height: 72px;
+                font-size: 1.5rem;
+            }
+
+            .nin-info-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nin-info-card i {
+                align-self: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <main class="main-content" style="margin-left: 0;">
+            <div class="post-gig-wrapper">
+
+                <!-- Header -->
+                <div class="post-gig-header">
+                    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i></a>
+                    <div>
+                        <h1>Complete Your Profile</h1>
+                        <p>Tell us about yourself so clients can trust you</p>
+                    </div>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="progress-steps">
+                    <div class="step completed">
+                        <div class="step-dot"><i class="fa-solid fa-check"></i></div>
+                        <span>Account</span>
+                    </div>
+                    <div class="step-line active"></div>
+                    <div class="step active">
+                        <div class="step-dot">2</div>
+                        <span>Profile</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step">
+                        <div class="step-dot">3</div>
+                        <span>Verify</span>
+                    </div>
+                </div>
+
+                <form class="form-card" id="profileForm">
+
+                    <!-- Avatar -->
+                    <div class="avatar-upload-row" id="avatarDropZone">
+                        <div class="avatar-preview" id="avatarPreview">?</div>
+                        <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+                            <label for="avatarInput" class="upload-btn-label">
+                                <i class="fa-solid fa-camera"></i> Upload Photo
+                            </label>
+                            <p class="helper-text" style="margin:0;">
+                                <i class="fa-solid fa-circle-info"></i>
+                                JPG or PNG, max 2MB. 
+                            </p>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+                    </div>
+
+                    <!-- Basic Info -->
+                    <div class="form-section-label">Basic Info</div>
+
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" placeholder="Your full legal name" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" placeholder="0801 234 5678" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location <span class="optional">(City, State)</span></label>
+                        <input type="text" id="location" placeholder="e.g. Kano, Kano State" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="experience">Years of Experience</label>
+                            <input type="number" id="experience" min="0" placeholder="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="portfolioLink">Portfolio <span class="optional">(optional)</span></label>
+                            <input type="url" id="portfolioLink" placeholder="https://yourportfolio.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills">Skills <span class="optional">(comma separated)</span></label>
+                        <input type="text" id="skills" placeholder="e.g. Graphic design, Video editing, Copywriting" required>
+                    </div>
+
+                    <!-- Bank Details -->
+                    <div class="form-section-label">Bank Details</div>
+
+                    <p class="helper-text" style="margin-top:-8px;">
+                        <i class="fa-solid fa-lock"></i>
+                        Your bank details are encrypted and only used for milestone payouts and withdrawals.
+                    </p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bankName">Bank Name</label>
+                            <input type="text" id="bankName" placeholder="e.g. First Bank of Nigeria" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bankAccountNumber">Account Number</label>
+                            <input type="text" id="bankAccountNumber" placeholder="10 digits" required maxlength="10">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bankAccountName">Account Name</label>
+                        <input type="text" id="bankAccountName" placeholder="As it appears on your bank card" required>
+                    </div>
+
+                    <!-- NIN Verification -->
+                    <div class="form-section-label">Identity Verification</div>
+
+                    <div id="ninStatusBox">
+                        <span class="verify-status-badge verify-none" id="ninStatusBadge">
+                            <i class="fa-solid fa-circle"></i> Not submitted
+                        </span>
+                    </div>
+
+                    <div class="nin-info-card">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <p>We use your NIN to verify your identity and keep the platform safe for everyone. Your data is encrypted and never shared with third parties.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ninNumber">NIN Number</label>
+                        <input type="text" id="ninNumber" placeholder="11-digit National Identification Number" maxlength="11">
+                    </div>
+
+                    <p class="helper-text">
+                        <i class="fa-solid fa-clock"></i>
+                        NIN verification takes 24–48 hours. You can still use the platform while we verify.
+                    </p>
+
+                    <button type="submit" class="auth-submit-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Profile
+                    </button>
+
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Notice</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <p>Action processed successfully.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="activate-btn" id="modalActionBtn">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/site-status.js"></script>
+    <script type="module" src="js/silver-surfer.js"></script>
+    <script type="module" src="js/profile.js"></script>
+    <script src="js/pwa.js"></script>
+    <script>
+        // Avatar drag & drop
+        const dropZone = document.getElementById('avatarDropZone');
+        const fileInput = document.getElementById('avatarInput');
+
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length) {
+                    fileInput.files = files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+    </script>
+</body>
+</html>
