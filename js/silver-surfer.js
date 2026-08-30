@@ -21,7 +21,7 @@ import {
 // client-side JS for production; route this call through a small server /
 // Cloud Function instead so the key isn't exposed. Left client-side here
 // for MVP speed.
-const PUSH_SECRET = 'provaspace'; // must match Netlify env var
+const PUSH_SECRET = 'provaspace'; // must match Netlify PUSH_SECRET env var
 const OPENROUTER_MODEL = 'openrouter/auto'; // pick any OpenRouter model
 const OPENROUTER_URL = '/.netlify/functions/ai';
 
