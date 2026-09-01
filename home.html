@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Provaspace — Work. Deliver. Get Paid.</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4169E1">
+<meta name="description" content="Provaspace is Nigeria's escrow-backed freelance marketplace. Clients post gigs. Freelancers claim and deliver. Payments held safely until you say so.">
+<link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#fff;color:#0a0f2e;overflow-x:hidden;}
+
+/* ── TOKENS ── */
+:root{
+    --navy:#0a0f2e;
+    --blue:#4169E1;
+    --blue-light:#5b82f0;
+    --amber:#f59e0b;
+    --white:#fff;
+    --grey:#f4f6fd;
+    --text-dim:#64748b;
+    --border:rgba(65,105,225,0.13);
+}
+
+/* ── NAV ── */
+nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 6vw;height:64px;
+    background:rgba(10,15,46,0.85);backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo img{width:32px;height:32px;}
+.nav-logo span{font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.nav-actions{display:flex;align-items:center;gap:12px;}
+.nav-link{color:rgba(255,255,255,.65);text-decoration:none;font-size:0.85rem;font-weight:600;transition:color .2s;}
+.nav-link:hover{color:#fff;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;text-decoration:none;border:none;transition:all .2s;}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 12px rgba(65,105,225,.35);}
+.btn-primary:hover{background:var(--blue-light);transform:translateY(-1px);}
+.btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.3);}
+.btn-outline:hover{border-color:#fff;}
+
+/* ── HERO ── */
+.hero{
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--navy);padding:100px 6vw 80px;text-align:center;position:relative;overflow:hidden;
+}
+/* subtle grid */
+.hero::before{
+    content:'';position:absolute;inset:0;
+    background-image:radial-gradient(rgba(65,105,225,.18) 1px,transparent 1px);
+    background-size:36px 36px;pointer-events:none;
+}
+/* blue glow */
+.hero::after{
+    content:'';position:absolute;top:-10%;left:50%;transform:translateX(-50%);
+    width:900px;height:600px;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(65,105,225,.22) 0%,transparent 70%);
+    pointer-events:none;
+}
+
+.hero-badge{
+    display:inline-flex;align-items:center;gap:7px;
+    background:rgba(65,105,225,.18);border:1px solid rgba(65,105,225,.4);
+    color:rgba(255,255,255,.85);padding:6px 16px;border-radius:999px;
+    font-size:0.78rem;font-weight:700;margin-bottom:32px;position:relative;z-index:1;
+}
+.hero-badge span{width:7px;height:7px;background:var(--amber);border-radius:50%;display:inline-block;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(.8);}}
+
+.hero h1{
+    font-size:clamp(2.6rem,7vw,5.2rem);font-weight:800;line-height:1.08;
+    color:#fff;max-width:780px;margin:0 auto 24px;position:relative;z-index:1;
+    letter-spacing:-.03em;
+}
+.hero h1 em{font-style:normal;color:var(--amber);}
+
+.hero-sub{
+    font-size:clamp(1rem,2.2vw,1.2rem);color:rgba(255,255,255,.6);
+    max-width:520px;margin:0 auto 44px;line-height:1.65;position:relative;z-index:1;
+}
+
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1;}
+
+.install-btn{
+    display:inline-flex;align-items:center;gap:10px;
+    background:linear-gradient(135deg,#4169E1,#5b82f0);color:#fff;
+    padding:15px 30px;border-radius:14px;font-size:1rem;font-weight:800;
+    cursor:pointer;border:none;box-shadow:0 4px 24px rgba(65,105,225,.45);
+    transition:all .2s;
+}
+.install-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(65,105,225,.55);}
+.install-btn:active{transform:scale(.98);}
+.install-btn i{font-size:1.1rem;}
+.install-btn.hidden{display:none;}
+
+.login-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    color:rgba(255,255,255,.7);text-decoration:none;
+    font-size:0.9rem;font-weight:600;transition:color .2s;
+}
+.login-btn:hover{color:#fff;}
+
+.hero-note{
+    margin-top:18px;font-size:0.75rem;color:rgba(255,255,255,.35);
+    position:relative;z-index:1;
+}
+
+/* ── HOW IT WORKS ── */
+.section{padding:96px 6vw;}
+.section-label{font-size:0.8rem;font-weight:700;color:var(--blue);letter-spacing:.5px;margin-bottom:14px;}
+.section h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;line-height:1.15;letter-spacing:-.02em;max-width:640px;}
+.section p.lead{font-size:1rem;color:var(--text-dim);margin-top:14px;line-height:1.7;max-width:540px;}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:56px;}
+.step{border-left:3px solid var(--border);padding-left:24px;}
+.step-num{font-size:0.72rem;font-weight:800;color:var(--blue);letter-spacing:.5px;margin-bottom:10px;}
+.step h3{font-size:1.05rem;font-weight:800;margin-bottom:8px;}
+.step p{font-size:0.875rem;color:var(--text-dim);line-height:1.65;}
+
+/* ── ESCROW ── */
+.escrow-section{background:var(--navy);color:#fff;padding:96px 6vw;position:relative;overflow:hidden;}
+.escrow-section::before{
+    content:'';position:absolute;right:-200px;top:-200px;
+    width:600px;height:600px;border-radius:50%;
+    background:radial-gradient(ellipse,rgba(65,105,225,.25) 0%,transparent 65%);
+    pointer-events:none;
+}
+.escrow-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.escrow-section .section-label{color:var(--amber);}
+.escrow-section h2{color:#fff;max-width:none;}
+.escrow-section p.lead{color:rgba(255,255,255,.6);max-width:none;}
+.escrow-pills{display:flex;flex-direction:column;gap:14px;margin-top:32px;}
+.pill{
+    display:flex;align-items:flex-start;gap:14px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;padding:18px;
+}
+.pill-icon{
+    width:40px;height:40px;border-radius:10px;flex-shrink:0;
+    background:rgba(65,105,225,.25);display:flex;align-items:center;justify-content:center;
+    font-size:1.1rem;
+}
+.pill h4{font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:4px;}
+.pill p{font-size:0.8rem;color:rgba(255,255,255,.5);line-height:1.55;}
+.escrow-visual{
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px;
+}
+.ev-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,255,255,.05);border-radius:12px;}
+.ev-label{font-size:0.8rem;color:rgba(255,255,255,.5);}
+.ev-val{font-size:0.95rem;font-weight:700;color:#fff;}
+.ev-badge{padding:4px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;}
+.ev-held{background:rgba(245,158,11,.15);color:#fbbf24;}
+.ev-paid{background:rgba(16,185,129,.15);color:#34d399;}
+.ev-pending{background:rgba(65,105,225,.2);color:#93b4ff;}
+
+/* ── FEATURES ── */
+.features-section{background:var(--grey);padding:96px 6vw;}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:56px;}
+.feat{background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px;}
+.feat-icon{
+    width:48px;height:48px;border-radius:12px;background:rgba(65,105,225,.08);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--blue);font-size:1.3rem;margin-bottom:18px;
+}
+.feat h3{font-size:1rem;font-weight:800;margin-bottom:8px;}
+.feat p{font-size:0.85rem;color:var(--text-dim);line-height:1.65;}
+
+/* ── TRUST ── */
+.trust-section{padding:96px 6vw;text-align:center;}
+.trust-section h2{margin:0 auto;}
+.trust-section p.lead{margin:14px auto 0;}
+.trust-stats{display:flex;justify-content:center;gap:64px;margin-top:56px;flex-wrap:wrap;}
+.stat-block{text-align:center;}
+.stat-num{font-size:2.8rem;font-weight:800;color:var(--blue);letter-spacing:-.03em;line-height:1;}
+.stat-desc{font-size:0.8rem;color:var(--text-dim);margin-top:6px;font-weight:600;}
+
+/* ── FOR WHO ── */
+.who-section{padding:96px 6vw;background:var(--grey);}
+.who-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px;}
+.who-card{
+    border-radius:20px;padding:40px;
+    display:flex;flex-direction:column;gap:20px;
+}
+.who-card.freelancer{background:var(--navy);color:#fff;}
+.who-card.client{background:var(--blue);color:#fff;}
+.who-card h3{font-size:1.5rem;font-weight:800;}
+.who-card p{font-size:0.9rem;line-height:1.7;opacity:.75;}
+.who-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.who-list li{display:flex;align-items:flex-start;gap:10px;font-size:0.875rem;opacity:.85;}
+.who-list li i{margin-top:3px;flex-shrink:0;color:var(--amber);}
+.who-card a{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.15);color:#fff;
+    padding:12px 22px;border-radius:10px;font-size:0.85rem;font-weight:700;
+    text-decoration:none;border:1px solid rgba(255,255,255,.25);
+    transition:all .2s;margin-top:auto;align-self:flex-start;
+}
+.who-card a:hover{background:rgba(255,255,255,.25);}
+
+/* ── INSTALL CTA ── */
+.cta-section{
+    background:var(--navy);padding:100px 6vw;text-align:center;
+    position:relative;overflow:hidden;
+}
+.cta-section::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 100%,rgba(65,105,225,.3) 0%,transparent 60%);
+    pointer-events:none;
+}
+.cta-section h2{
+    font-size:clamp(2rem,5vw,3.5rem);font-weight:800;color:#fff;
+    letter-spacing:-.03em;line-height:1.1;max-width:600px;margin:0 auto 16px;
+    position:relative;z-index:1;
+}
+.cta-section p{color:rgba(255,255,255,.55);font-size:1rem;margin-bottom:40px;position:relative;z-index:1;}
+.cta-actions{display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;z-index:1;}
+.install-steps{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
+    margin-top:6px;
+}
+.step-pill{
+    display:flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+    border-radius:999px;padding:6px 14px;font-size:0.75rem;color:rgba(255,255,255,.6);
+}
+.step-pill i{color:var(--amber);font-size:0.8rem;}
+.step-sep{color:rgba(255,255,255,.2);font-size:0.8rem;}
+
+/* ── FOOTER ── */
+footer{background:#060a1f;padding:40px 6vw;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.footer-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.footer-logo img{width:28px;height:28px;opacity:.7;}
+.footer-logo span{font-size:0.9rem;font-weight:700;color:rgba(255,255,255,.4);}
+footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-size:0.78rem;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:rgba(255,255,255,.65);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+    .steps{grid-template-columns:1fr;}
+    .escrow-inner{grid-template-columns:1fr;gap:40px;}
+    .features-grid{grid-template-columns:1fr 1fr;}
+    .who-grid{grid-template-columns:1fr;}
+    .trust-stats{gap:36px;}
+}
+@media(max-width:600px){
+    nav{padding:0 4vw;}
+    .section{padding:64px 5vw;}
+    .escrow-section{padding:64px 5vw;}
+    .features-grid{grid-template-columns:1fr;}
+    .features-section{padding:64px 5vw;}
+    .trust-section{padding:64px 5vw;}
+    .who-section{padding:64px 5vw;}
+    .cta-section{padding:72px 5vw;}
+    footer{flex-direction:column;align-items:flex-start;}
+    .nav-actions .btn-outline{display:none;}
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+    <a href="landing.html" class="nav-logo">
+        <img src="icons/icon-192.svg" alt="Provaspace">
+        <span>Provaspace</span>
+    </a>
+    <div class="nav-actions">
+        <a href="login.html" class="nav-link">Log in</a>
+        <a href="signup.html" class="btn btn-outline">Sign up</a>
+        <button class="btn btn-primary install-btn hidden" id="navInstallBtn" style="padding:9px 18px;font-size:0.85rem;">
+            <i class="fa-solid fa-download"></i> Install App
+        </button>
+    </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+    <div class="hero-badge"><span></span> Nigeria's escrow-backed freelance platform</div>
+    <h1>Work. Deliver.<br><em>Get Paid.</em></h1>
+    <p class="hero-sub">
+        Provaspace holds payments in escrow so freelancers always get paid and clients only release funds when they're satisfied.
+    </p>
+    <div class="hero-actions">
+        <button class="install-btn hidden" id="heroInstallBtn">
+            <i class="fa-solid fa-download"></i>
+            Install Provaspace
+        </button>
+        <a href="signup.html" class="install-btn" id="heroSignupBtn">
+            <i class="fa-solid fa-arrow-right"></i>
+            Get Started Free
+        </a>
+        <a href="login.html" class="login-btn">Already have an account <i class="fa-solid fa-arrow-right" style="font-size:.8rem;"></i></a>
+    </div>
+    <p class="hero-note">Free to join · Works on any device · Installs like a native app</p>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section" style="max-width:1100px;margin:0 auto;">
+    <div class="section-label">How it works</div>
+    <h2>From gig to payday in three steps</h2>
+    <p class="lead">No chasing invoices. No ghosted payments. Every naira accounted for.</p>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">Client</div>
+            <h3>Post a gig with milestones</h3>
+            <p>Describe the job, set a price, break it into milestones, and pay the initial deposit into escrow. Your money is locked — not spent — until work is delivered.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">Freelancer</div>
+            <h3>Claim it and deliver</h3>
+            <p>Browse open gigs in The Space, claim one that fits your skills, and start the clock. Mark each milestone delivered as you go.</p>
+        </div>
+        <div class="step">
+            <div class="step-num">Both sides</div>
+            <h3>Admin approves, wallet gets credited</h3>
+            <p>When the client is satisfied and requests release, admin confirms and the freelancer's wallet is credited. Clean, transparent, no arguments.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── ESCROW ── -->
+<section class="escrow-section">
+    <div class="escrow-inner" style="max-width:1100px;margin:0 auto;">
+        <div>
+            <div class="section-label">Escrow protection</div>
+            <h2 style="color:#fff;">Your money doesn't move until you say so</h2>
+            <p class="lead">Every gig on Provaspace runs through our escrow system. Clients pay upfront; freelancers know the money is real; releases only happen with admin sign-off.</p>
+            <div class="escrow-pills">
+                <div class="pill">
+                    <div class="pill-icon">🔒</div>
+                    <div>
+                        <h4>Deposit held at gig post</h4>
+                        <p>Clients deposit funds when posting — no freelancer starts work on a promise.</p>
+                    </div>
+                </div>
+                <div class="pill">
+                    <div class="pill-icon">⚖️</div>
+                    <div>
+                        <h4>Admin-gated milestone release</h4>
+                        <p>Every payment release is reviewed and approved by a human admin before it hits a wallet.</p>
+                    </div>
+                </div>
+                <div class="pill">
+                    <div class="pill-icon">🛡️</div>
+                    <div>
+                        <h4>Dispute protection built in</h4>
+                        <p>If something goes wrong, either side can raise a dispute. Funds stay locked until admin resolves it.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="escrow-visual">
+            <div style="font-size:0.75rem;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:6px;letter-spacing:.4px;">Live contract example</div>
+            <div class="ev-row">
+                <div>
+                    <div class="ev-label">Contract</div>
+                    <div class="ev-val">Brand Identity Design</div>
+                </div>
+                <span class="ev-badge ev-held">Active</span>
+            </div>
+            <div class="ev-row">
+                <div class="ev-label">Total price</div>
+                <div class="ev-val">₦150,000</div>
+            </div>
+            <div class="ev-row">
+                <div class="ev-label">Held in escrow</div>
+                <div class="ev-val">₦150,000</div>
+            </div>
+            <div class="ev-row">
+                <div>
+                    <div class="ev-label">Milestone 1 — Logo concepts</div>
+                    <div style="font-size:0.75rem;color:rgba(255,255,255,.4);">40% · ₦60,000</div>
+                </div>
+                <span class="ev-badge ev-paid">Released</span>
+            </div>
+            <div class="ev-row">
+                <div>
+                    <div class="ev-label">Milestone 2 — Final files</div>
+                    <div style="font-size:0.75rem;color:rgba(255,255,255,.4);">60% · ₦90,000</div>
+                </div>
+                <span class="ev-badge ev-pending">Pending</span>
+            </div>
+            <div style="padding:14px 16px;background:rgba(16,185,129,.08);border-radius:12px;font-size:0.78rem;color:rgba(255,255,255,.5);">
+                <i class="fa-solid fa-circle-check" style="color:#34d399;margin-right:6px;"></i>
+                Freelancer wallet credited ₦60,000 after admin approval
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="features-section">
+    <div style="max-width:1100px;margin:0 auto;">
+        <div class="section-label">Platform features</div>
+        <h2>Everything a working freelancer needs</h2>
+        <div class="features-grid">
+            <div class="feat">
+                <div class="feat-icon"><i class="fa-solid fa-briefcase"></i></div>
+                <h3>The Space</h3>
+                <p>Open gig board where freelancers browse and claim jobs that match their skills. No bidding wars — first to claim it gets it.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon"><i class="fa-solid fa-comments"></i></div>
+                <h3>Secured Chat</h3>
+                <p>Every contract has a dedicated chat workspace. Share files, images, and updates — all in one place, tied to the job.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon"><i class="fa-solid fa-wallet"></i></div>
+                <h3>Built-in Wallet</h3>
+                <p>Earnings land directly in your Provaspace wallet. Request withdrawal to your bank account whenever you're ready.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon"><i class="fa-solid fa-star"></i></div>
+                <h3>Trust Score</h3>
+                <p>Every freelancer has a trust score that reflects their delivery record. Deliver consistently, score higher, get noticed first.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon"><i class="fa-solid fa-bell"></i></div>
+                <h3>OS Push Notifications</h3>
+                <p>Get notified the moment a gig is posted, a milestone released, or a message arrives — even with the app closed.</p>
+            </div>
+            <div class="feat">
+                <div class="feat-icon"><i class="fa-solid fa-user-plus"></i></div>
+                <h3>Referral Rewards</h3>
+                <p>Refer other freelancers. When they verify their NIN and complete their first job, you earn rent credit — automatically.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── TRUST STATS ── -->
+<section class="trust-section">
+    <div style="max-width:1100px;margin:0 auto;">
+        <div class="section-label" style="text-align:center;">Built on trust</div>
+        <h2 style="text-align:center;margin:0 auto;">Designed so nobody gets played</h2>
+        <p class="lead" style="text-align:center;margin:14px auto 0;">Every feature on Provaspace exists to protect both sides of a transaction.</p>
+        <div class="trust-stats">
+            <div class="stat-block">
+                <div class="stat-num">100%</div>
+                <div class="stat-desc">Escrow-backed gigs</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-num">0</div>
+                <div class="stat-desc">Payments without admin sign-off</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-num">NIN</div>
+                <div class="stat-desc">Verified freelancers only</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-num">₦0</div>
+                <div class="stat-desc">To join and get started</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOR WHO ── -->
+<section class="who-section">
+    <div style="max-width:1100px;margin:0 auto;">
+        <div class="section-label">Who it's for</div>
+        <h2>Two sides, one platform</h2>
+        <div class="who-grid">
+            <div class="who-card freelancer">
+                <h3>Freelancers</h3>
+                <p>You do the work. Provaspace makes sure you get paid for it — every time, no exceptions.</p>
+                <ul class="who-list">
+                    <li><i class="fa-solid fa-check"></i> Browse and claim open gigs in The Space</li>
+                    <li><i class="fa-solid fa-check"></i> Chat directly with clients per contract</li>
+                    <li><i class="fa-solid fa-check"></i> Milestone payments released to your wallet</li>
+                    <li><i class="fa-solid fa-check"></i> Withdraw to your bank account anytime</li>
+                    <li><i class="fa-solid fa-check"></i> Earn rent credits by referring others</li>
+                </ul>
+                <a href="signup.html">Join as a Freelancer <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="who-card client">
+                <h3>Clients</h3>
+                <p>Post jobs with confidence. Your money only moves when the work meets your standard.</p>
+                <ul class="who-list">
+                    <li><i class="fa-solid fa-check"></i> Post gigs with milestones and set the terms</li>
+                    <li><i class="fa-solid fa-check"></i> Deposit held securely — not spent upfront</li>
+                    <li><i class="fa-solid fa-check"></i> Request release only when you're satisfied</li>
+                    <li><i class="fa-solid fa-check"></i> Dispute resolution if anything goes wrong</li>
+                    <li><i class="fa-solid fa-check"></i> Optional insurance on every gig</li>
+                </ul>
+                <a href="signup.html">Join as a Client <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── INSTALL CTA ── -->
+<section class="cta-section">
+    <h2>Works on every device.<br>Installs in seconds.</h2>
+    <p>No app store. No waiting. Just tap Install and it's on your home screen.</p>
+    <div class="cta-actions">
+        <button class="install-btn hidden" id="ctaInstallBtn" style="font-size:1.05rem;padding:17px 36px;">
+            <i class="fa-solid fa-download"></i>
+            Install Provaspace — it's free
+        </button>
+        <a href="signup.html" class="install-btn" id="ctaSignupBtn" style="font-size:1.05rem;padding:17px 36px;">
+            <i class="fa-solid fa-arrow-right"></i>
+            Open in Browser
+        </a>
+        <div class="install-steps">
+            <div class="step-pill"><i class="fa-solid fa-globe"></i> Open in browser</div>
+            <span class="step-sep">→</span>
+            <div class="step-pill"><i class="fa-solid fa-download"></i> Tap Install</div>
+            <span class="step-sep">→</span>
+            <div class="step-pill"><i class="fa-solid fa-mobile-screen"></i> On your home screen</div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+    <a href="landing.html" class="footer-logo">
+        <img src="icons/icon-192.svg" alt="Provaspace">
+        <span>Provaspace</span>
+    </a>
+    <p>© 2026 Provaspace · Addro Tech</p>
+    <div class="footer-links">
+        <a href="login.html">Log in</a>
+        <a href="signup.html">Sign up</a>
+        <a href="index.html">Dashboard</a>
+    </div>
+</footer>
+
+<script>
+// ── PWA INSTALL ────────────────────────────────────────────────────
+let deferredPrompt = null;
+
+const installBtns = document.querySelectorAll('.install-btn[id$="InstallBtn"]');
+const signupBtns  = document.querySelectorAll('.install-btn[id$="SignupBtn"]');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Show install buttons, hide signup fallbacks
+    installBtns.forEach(b => b.classList.remove('hidden'));
+    signupBtns.forEach(b => b.classList.add('hidden'));
+});
+
+async function triggerInstall() {
+    if (!deferredPrompt) {
+        // Already installed or not supported — go to signup
+        window.location.href = 'signup.html';
+        return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (outcome === 'accepted') {
+        installBtns.forEach(b => {
+            b.innerHTML = '<i class="fa-solid fa-check"></i> Installed!';
+            b.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            b.disabled = true;
+        });
+        setTimeout(() => { window.location.href = 'signup.html'; }, 1200);
+    }
+}
+
+installBtns.forEach(b => b.addEventListener('click', triggerInstall));
+
+// Already installed — hide the install prompt if running standalone
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    installBtns.forEach(b => b.classList.add('hidden'));
+    signupBtns.forEach(b => b.classList.remove('hidden'));
+}
+
+// Register SW for caching
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

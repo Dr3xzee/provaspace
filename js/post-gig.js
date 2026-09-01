@@ -138,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: document.getElementById('gigDescription').value.trim(),
                 price,
                 deposit,
+                escrowBalance: deposit,   // tracks real money held; grows when client tops up
                 insuranceFee,
                 duration: parseFloat(document.getElementById('gigDuration').value),
                 durationUnit: document.getElementById('gigDurationUnit').value,

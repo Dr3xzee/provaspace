@@ -1,4 +1,3 @@
-
 // hm ============================================
 // PROVASPACE — The Space (shared marketplace: gig feed for freelancers, talent search for clients)
 // ============================================
@@ -223,6 +222,7 @@ async function claimGig(gigId) {
                 status: 'active',
                 payoutsEarned: 0,
                 totalPrice: gig.price,
+                escrowBalance: gig.deposit || 0,   // only the deposit is in escrow initially
                 createdAt: serverTimestamp(),
             });
         });

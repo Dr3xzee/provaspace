@@ -222,6 +222,48 @@
 
                 <!-- WITHDRAWALS -->
                 <section class="admin-section" id="section-withdrawals">
+                    <!-- Withdrawal Requests -->
+                    <div class="admin-panel" style="margin-bottom:20px;">
+                        <h2><i class="fa-solid fa-money-bill-wave"></i> Withdrawal Requests</h2>
+                        <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:12px;">Pending payout requests from freelancers. Approve after bank transfer.</p>
+                        <div style="overflow-x:auto;">
+                            <table class="admin-table">
+                                <thead><tr>
+                                    <th>Account Name</th><th>Bank</th><th>Account No.</th>
+                                    <th>Amount</th><th>Requested</th><th>Action</th>
+                                </tr></thead>
+                                <tbody id="withdrawalRequestsBody">
+                                    <tr><td colspan="6">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Milestone Release Requests -->
+                    <div class="admin-panel" style="margin-bottom:20px;">
+                        <h2><i class="fa-solid fa-flag-checkered"></i> Milestone Release Requests</h2>
+                        <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:12px;">Clients that have approved delivery and requested payment release. Expand each contract to approve.</p>
+                        <div id="milestoneReleasesContainer">
+                            <p style="font-size:0.85rem; color:var(--text-secondary);">Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- Referral Settings -->
+                    <div class="admin-panel" style="margin-bottom:20px;">
+                        <h2><i class="fa-solid fa-user-plus"></i> Referral Settings</h2>
+                        <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:12px;">
+                            Set how much rent credit a freelancer earns when someone they referred verifies their NIN and completes their first task.
+                        </p>
+                        <div class="form-group" style="max-width:280px;">
+                            <label>Referral Rent Credit (₦)</label>
+                            <input type="number" id="referralRentCredit" placeholder="e.g. 2000" min="0">
+                        </div>
+                        <button class="activate-btn" id="saveReferralBtn" style="align-self:flex-start; padding:14px 28px; margin-top:10px;">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Referral Settings
+                        </button>
+                    </div>
+
+                    <!-- Withdrawal Settings -->
                     <div class="admin-panel">
                         <h2><i class="fa-solid fa-money-bill-transfer"></i> Withdrawal Settings</h2>
                         <div class="price-form-grid">
@@ -239,6 +281,7 @@
                         <button class="activate-btn" id="saveWithdrawalBtn" style="align-self:flex-start; padding: 14px 28px; margin-top: 10px;">
                             <i class="fa-solid fa-floppy-disk"></i> Save Withdrawal Settings
                         </button>
+                    </div>
                     </div>
                 </section>
 
@@ -270,6 +313,15 @@
                         <button class="activate-btn" id="sendBroadcastBtn" style="align-self:flex-start; padding: 14px 28px;">
                             <i class="fa-solid fa-paper-plane"></i> Send Notification
                         </button>
+                    </div>
+
+                    <!-- Recent notifications with delete -->
+                    <div class="admin-panel" style="margin-top:20px;">
+                        <h2><i class="fa-solid fa-bell"></i> Recent Notifications</h2>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">Last 50 notifications sent. Delete any you sent by mistake.</p>
+                        <div id="recentNotificationsContainer">
+                            <p style="font-size:0.85rem; color:var(--text-secondary);">Loading...</p>
+                        </div>
                     </div>
                 </section>
 

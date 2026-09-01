@@ -6,8 +6,8 @@
 
 import {
     auth, db, onAuthStateChanged,
-    doc, getDoc, setDoc, updateDoc,
-    collection, query, where, orderBy, getDocs, addDoc, onSnapshot, serverTimestamp,
+    doc, getDoc, setDoc, updateDoc, deleteDoc,
+    collection, query, where, orderBy, getDocs, addDoc, onSnapshot, serverTimestamp, limit,
 } from './firebase.js';
 import { notifyAll, notifyRole, notifyUser } from './notify-helper.js';
 
@@ -41,8 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
         loadWithdrawalSettings();
         loadMaintenanceSettings();
         wireBroadcastForm();
+        watchRecentNotifications();
         wireWithdrawalForm();
         wireMaintenanceForm();
+        watchWithdrawalRequests();
+        watchMilestoneReleaseRequests();
+        loadReferralSettings();
+        wireReferralForm();
     });
 
     // ---------- SUPPORT TICKETS ----------
@@ -216,6 +221,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---------- BROADCAST NOTIFICATIONS ----------
+    // ---------- RECENT NOTIFICATIONS (admin delete) ----------
+    function watchRecentNotifications() {
+        const container = document.getElementById('recentNotificationsContainer');
+        if (!container) return;
+
+        const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(50));
+        onSnapshot(q, (snap) => {
+            if (snap.empty) {
+                container.innerHTML = '<p style="font-size:0.85rem; color:var(--text-secondary);">No notifications sent yet.</p>';
+                return;
+            }
+            container.innerHTML = '';
+            snap.forEach(d => {
+                const n = { id: d.id, ...d.data() };
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-color); gap:12px;';
+                const target = n.userId === 'all' ? '📢 All users' : n.role ? `👥 ${n.role}s` : `👤 ${n.userId.slice(0,8)}...`;
+                const time = n.createdAt?.toDate ? n.createdAt.toDate().toLocaleString() : '—';
+                row.innerHTML = `
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:0.85rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(n.title || '—')}</div>
+                        <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:2px;">${target} · ${time}</div>
+                        <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(n.message || '')}</div>
+                    </div>
+                    <button class="table-action-btn" style="background:rgba(239,68,68,0.12); color:#ef4444; flex-shrink:0;" data-delete-notif="${n.id}">Delete</button>
+                `;
+                container.appendChild(row);
+            });
+
+            container.querySelectorAll('[data-delete-notif]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Delete this notification? It will be removed for all recipients.')) return;
+                    try {
+                        await deleteDoc(doc(db, 'notifications', btn.dataset.deleteNotif));
+                    } catch (err) {
+                        console.error(err);
+                        alertModal('Error', 'Could not delete notification.');
+                    }
+                });
+            });
+        });
+    }
+
     function wireBroadcastForm() {
         const audienceSelect = document.getElementById('broadcastAudience');
         const emailWrap = document.getElementById('broadcastEmailWrap');
@@ -247,6 +295,284 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
                 alertModal('Error', 'Could not send notification.');
+            }
+        });
+    }
+
+    // ---------- WITHDRAWAL REQUESTS ----------
+    function watchWithdrawalRequests() {
+        const body = document.getElementById('withdrawalRequestsBody');
+        if (!body) return;
+        const q = query(collection(db, 'withdrawals'), where('status', '==', 'pending'), orderBy('requestedAt', 'desc'));
+        onSnapshot(q, (snap) => {
+            body.innerHTML = snap.empty ? '<tr><td colspan="6">No pending withdrawal requests.</td></tr>' : '';
+            snap.forEach(d => {
+                const w = { id: d.id, ...d.data() };
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(w.bankAccountName || '—')}</td>
+                    <td>${escapeHtml(w.bankName || '—')}</td>
+                    <td>${escapeHtml(w.bankAccountNumber || '—')}</td>
+                    <td>₦${Number(w.amount || 0).toLocaleString()}</td>
+                    <td>${timeAgo(w.requestedAt)}</td>
+                    <td style="display:flex; gap:6px;">
+                        <button class="table-action-btn" data-approve-withdrawal="${w.id}" data-uid="${w.userId}" data-amount="${w.amount}">Approve</button>
+                        <button class="table-action-btn" style="background:rgba(239,68,68,0.15); color:#ef4444;" data-reject-withdrawal="${w.id}" data-uid="${w.userId}" data-amount="${w.amount}">Reject</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+
+            body.querySelectorAll('[data-approve-withdrawal]').forEach(btn => {
+                btn.addEventListener('click', () => approveWithdrawal(btn.dataset.approveWithdrawal, btn.dataset.uid, parseFloat(btn.dataset.amount)));
+            });
+            body.querySelectorAll('[data-reject-withdrawal]').forEach(btn => {
+                btn.addEventListener('click', () => rejectWithdrawal(btn.dataset.rejectWithdrawal, btn.dataset.uid, parseFloat(btn.dataset.amount)));
+            });
+        });
+    }
+
+    async function approveWithdrawal(withdrawalId, userId, amount) {
+        if (!confirm(`Approve withdrawal of ₦${amount.toLocaleString()}? Mark as paid after bank transfer.`)) return;
+        try {
+            await updateDoc(doc(db, 'withdrawals', withdrawalId), {
+                status: 'approved', approvedAt: serverTimestamp(), approvedBy: currentAdmin.uid,
+            });
+            // Remove pending balance from user
+            const userSnap = await getDoc(doc(db, 'users', userId));
+            if (userSnap.exists()) {
+                const pending = userSnap.data().walletBalancePending || 0;
+                await updateDoc(doc(db, 'users', userId), {
+                    walletBalancePending: Math.max(0, pending - amount),
+                });
+            }
+            const { notifyUser } = await import('./notify-helper.js');
+            await notifyUser(userId, {
+                title: '✅ Withdrawal approved',
+                message: `Your withdrawal of ₦${amount.toLocaleString()} has been approved and will be paid to your bank account.`,
+                type: 'withdrawal_approved',
+            });
+            alertModal('Approved', `Withdrawal of ₦${amount.toLocaleString()} marked as approved.`);
+        } catch (err) {
+            console.error(err);
+            alertModal('Error', 'Could not approve withdrawal.');
+        }
+    }
+
+    async function rejectWithdrawal(withdrawalId, userId, amount) {
+        if (!confirm(`Reject this withdrawal? The amount will be returned to the user's wallet.`)) return;
+        try {
+            await updateDoc(doc(db, 'withdrawals', withdrawalId), {
+                status: 'rejected', rejectedAt: serverTimestamp(), rejectedBy: currentAdmin.uid,
+            });
+            // Refund to wallet
+            const userSnap = await getDoc(doc(db, 'users', userId));
+            if (userSnap.exists()) {
+                const d = userSnap.data();
+                await updateDoc(doc(db, 'users', userId), {
+                    walletBalance: (d.walletBalance || 0) + amount,
+                    walletBalancePending: Math.max(0, (d.walletBalancePending || 0) - amount),
+                });
+            }
+            const { notifyUser } = await import('./notify-helper.js');
+            await notifyUser(userId, {
+                title: 'Withdrawal rejected',
+                message: `Your withdrawal of ₦${amount.toLocaleString()} was rejected. The amount has been returned to your wallet.`,
+                type: 'withdrawal_rejected',
+            });
+            alertModal('Rejected', `Withdrawal rejected and ₦${amount.toLocaleString()} returned to user's wallet.`);
+        } catch (err) {
+            console.error(err);
+            alertModal('Error', 'Could not reject withdrawal.');
+        }
+    }
+
+    // ---------- MILESTONE RELEASE REQUESTS ----------
+    function watchMilestoneReleaseRequests() {
+        const container = document.getElementById('milestoneReleasesContainer');
+        if (!container) return;
+
+        const q = query(collection(db, 'contracts'));
+        onSnapshot(q, (snap) => {
+            const pending = [];
+            snap.forEach(d => {
+                const c = { id: d.id, ...d.data() };
+                if (c.status !== 'active') return;
+                (c.milestones || []).forEach((m, idx) => {
+                    // Show if submitted and not yet released (with or without releaseRequested)
+                    if (m.submitted && !m.released) {
+                        pending.push({ contract: c, milestoneIdx: idx, milestone: m });
+                    }
+                });
+            });
+
+            if (pending.length === 0) {
+                container.innerHTML = '<p style="font-size:0.85rem; color:var(--text-secondary);">No pending release requests.</p>';
+                return;
+            }
+
+            // Group by contract
+            const byContract = {};
+            pending.forEach(p => {
+                if (!byContract[p.contract.id]) byContract[p.contract.id] = { contract: p.contract, milestones: [] };
+                byContract[p.contract.id].milestones.push(p);
+            });
+
+            container.innerHTML = '';
+            Object.values(byContract).forEach(({ contract, milestones }) => {
+                const block = document.createElement('div');
+                block.style.cssText = 'background:var(--bg-main); border:1px solid var(--border-color); border-radius:14px; padding:14px; margin-bottom:12px;';
+
+                const header = document.createElement('div');
+                header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;';
+                header.innerHTML = `
+                    <strong style="font-size:0.9rem;">${escapeHtml(contract.title)}</strong>
+                    <button class="table-action-btn toggle-milestones-btn">Show Milestones ▾</button>
+                `;
+
+                const details = document.createElement('div');
+                details.style.display = 'none';
+                milestones.forEach(({ milestone, milestoneIdx }) => {
+                    const amount = Math.round((contract.totalPrice || 0) * (milestone.percent / 100));
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border-color);';
+                    const statusLabel = milestone.releaseRequested
+                        ? '<span style="color:#f59e0b; font-size:0.72rem;">⏳ Release requested by client</span>'
+                        : '<span style="color:#6b7280; font-size:0.72rem;">✅ Delivered — no release request yet</span>';
+                    row.innerHTML = `
+                        <div>
+                            <div style="font-size:0.85rem; font-weight:600;">${escapeHtml(milestone.name || 'Milestone ' + (milestoneIdx + 1))}</div>
+                            <div style="font-size:0.78rem; color:var(--text-secondary);">₦${amount.toLocaleString()} · ${milestone.percent}%</div>
+                            ${statusLabel}
+                        </div>
+                        <button class="table-action-btn"
+                            data-contract-id="${contract.id}"
+                            data-milestone-idx="${milestoneIdx}"
+                            data-amount="${amount}"
+                            data-freelancer="${contract.freelancerId}"
+                            data-client="${contract.clientId}"
+                            data-title="${escapeHtml(contract.title)}">
+                            Approve Release
+                        </button>
+                    `;
+                    details.appendChild(row);
+                });
+
+                block.appendChild(header);
+                block.appendChild(details);
+                container.appendChild(block);
+
+                // Wire toggle
+                header.querySelector('.toggle-milestones-btn').addEventListener('click', function() {
+                    const isHidden = details.style.display === 'none' || details.style.display === '';
+                    details.style.display = isHidden ? 'block' : 'none';
+                    this.textContent = isHidden ? 'Hide Milestones ▴' : 'Show Milestones ▾';
+                });
+            });
+
+            container.querySelectorAll('[data-contract-id]').forEach(btn => {
+                btn.addEventListener('click', () => adminApproveMilestoneRelease(btn));
+            });
+        });
+    }
+
+    async function adminApproveMilestoneRelease(btn) {
+        const contractId = btn.dataset.contractId;
+        const idx = parseInt(btn.dataset.milestoneIdx, 10);
+        const amount = parseFloat(btn.dataset.amount);
+        const freelancerId = btn.dataset.freelancer;
+        const clientId = btn.dataset.client;
+        const title = btn.dataset.title;
+
+        if (!confirm(`Approve release of ₦${amount.toLocaleString()} for this milestone?`)) return;
+
+        try {
+            const contractSnap = await getDoc(doc(db, 'contracts', contractId));
+            if (!contractSnap.exists()) return;
+            const contract = contractSnap.data();
+
+            // ── ESCROW GATE ──────────────────────────
+            const escrow    = contract.escrowBalance || 0;
+            const released  = contract.payoutsEarned || 0;
+            const available = escrow - released;
+            if (amount > available) {
+                const shortfall = amount - available;
+                alertModal('⚠️ Insufficient Escrow',
+                    `Only ₦${available.toLocaleString()} is in escrow but this milestone needs ₦${amount.toLocaleString()}. ` +
+                    `Client must top up ₦${shortfall.toLocaleString()} first.`
+                );
+                const { notifyUser } = await import('./notify-helper.js');
+                await notifyUser(contract.clientId, {
+                    title: '💳 Payment required',
+                    message: `Milestone "${freelancer}" on "${title}" needs ₦${shortfall.toLocaleString()} more in escrow before release.`,
+                    type: 'escrow_topup_required',
+                    link: 'client-dashboard.html',
+                });
+                return;
+            }
+            // ─────────────────────────────────────────
+            const updated = [...contract.milestones];
+            updated[idx] = { ...updated[idx], released: true, releaseRequested: false, releasedAt: new Date().toISOString(), releasedBy: currentAdmin.uid };
+            const newPayoutsEarned = (contract.payoutsEarned || 0) + amount;
+            const allReleased = updated.every(x => x.released);
+
+            await updateDoc(doc(db, 'contracts', contractId), {
+                milestones: updated,
+                payoutsEarned: newPayoutsEarned,
+                status: allReleased ? 'completed' : contract.status,
+            });
+
+            // Credit freelancer
+            const flSnap = await getDoc(doc(db, 'users', freelancerId));
+            if (flSnap.exists()) {
+                await updateDoc(doc(db, 'users', freelancerId), {
+                    walletBalance: (flSnap.data().walletBalance || 0) + amount,
+                });
+            }
+            // Update client totalSpent
+            const clSnap = await getDoc(doc(db, 'users', clientId));
+            if (clSnap.exists()) {
+                await updateDoc(doc(db, 'users', clientId), {
+                    totalSpent: (clSnap.data().totalSpent || 0) + amount,
+                });
+            }
+
+            const { notifyUser } = await import('./notify-helper.js');
+            await notifyUser(freelancerId, {
+                title: '💰 Payment released!',
+                message: `Admin released ₦${amount.toLocaleString()} for a milestone on "${title}".`,
+                type: 'payment_released',
+            });
+            await notifyUser(clientId, {
+                title: 'Payment released',
+                message: `₦${amount.toLocaleString()} has been released to the freelancer on "${title}".`,
+                type: 'payment_released',
+            });
+
+            alertModal('Released ✓', `₦${amount.toLocaleString()} released to freelancer.${allReleased ? ' Contract marked completed.' : ''}`);
+        } catch (err) {
+            console.error(err);
+            alertModal('Error', 'Could not approve release.');
+        }
+    }
+
+    // ---------- REFERRAL SETTINGS ----------
+    async function loadReferralSettings() {
+        const snap = await getDoc(doc(db, 'settings', 'referral'));
+        const val = snap.exists() ? (snap.data().rentCredit || 0) : 0;
+        const input = document.getElementById('referralRentCredit');
+        if (input) input.value = val;
+    }
+
+    function wireReferralForm() {
+        document.getElementById('saveReferralBtn')?.addEventListener('click', async () => {
+            const amount = parseFloat(document.getElementById('referralRentCredit').value) || 0;
+            try {
+                await setDoc(doc(db, 'settings', 'referral'), { rentCredit: amount, updatedAt: new Date() }, { merge: true });
+                alertModal('Saved', `Referral rent credit set to ₦${amount.toLocaleString()}.`);
+            } catch (err) {
+                console.error(err);
+                alertModal('Error', 'Could not save referral settings.');
             }
         });
     }

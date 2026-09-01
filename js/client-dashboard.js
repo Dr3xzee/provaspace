@@ -169,6 +169,11 @@ document.addEventListener('DOMContentLoaded', () => {
         active.forEach((c) => {
             const total = (c.milestones || []).length;
             const done = (c.milestones || []).filter(m => m.released).length;
+            const escrow = c.escrowBalance || 0;
+            const totalPrice = c.totalPrice || 0;
+            const shortfall = totalPrice - escrow;
+            const needsTopup = shortfall > 0;
+
             const card = document.createElement('div');
             card.className = 'contract-card';
             card.innerHTML = `
@@ -180,14 +185,51 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>Milestones: <strong>${done} / ${total}</strong></span>
                     <span>Released: <strong>${formatNaira(c.payoutsEarned || 0)}</strong></span>
                 </div>
-                <div class="contract-actions">
+                ${needsTopup ? `
+                <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 12px;margin-top:6px;font-size:0.78rem;color:#92400e;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
+                    <strong>${formatNaira(shortfall)}</strong> remaining balance unpaid.
+                    Milestones cannot be released until full payment is in escrow.
+                </div>` : ''}
+                <div class="contract-actions" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
                     <button class="mini-btn" data-view="${c.id}">Open Contract</button>
+                    ${needsTopup ? `<button class="mini-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);" data-topup="${c.id}" data-amount="${shortfall}" data-title="${escapeHtml(c.title)}">
+                        <i class="fa-solid fa-credit-card"></i> Pay ${formatNaira(shortfall)}
+                    </button>` : ''}
                 </div>
             `;
             list.appendChild(card);
         });
+
         list.querySelectorAll('[data-view]').forEach(btn => {
             btn.addEventListener('click', () => { window.location.href = `contract-detail.html?id=${btn.dataset.view}`; });
+        });
+
+        list.querySelectorAll('[data-topup]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const contractId = btn.dataset.topup;
+                const amount = parseFloat(btn.dataset.amount);
+                const title = btn.dataset.title;
+                if (!amount || amount <= 0) return;
+                try {
+                    await payWithPaystack({
+                        email: currentUserData.email,
+                        amountNaira: amount,
+                        metadata: { purpose: 'escrowTopup', contractId, uid: currentUser.uid },
+                    });
+                    // Increment escrowBalance on contract
+                    const cSnap = await getDoc(doc(db, 'contracts', contractId));
+                    if (cSnap.exists()) {
+                        const cur = cSnap.data().escrowBalance || 0;
+                        await updateDoc(doc(db, 'contracts', contractId), { escrowBalance: cur + amount });
+                    }
+                    showModal('Payment received ✓', `${formatNaira(amount)} added to escrow for "${title}". Admin can now release milestones.`, null);
+                    loadStatsAndContracts();
+                } catch (err) {
+                    console.error(err);
+                    showModal('Payment failed', err.message || 'Could not process payment.', null);
+                }
+            });
         });
     }
 

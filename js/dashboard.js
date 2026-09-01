@@ -9,6 +9,7 @@ import {
 } from './firebase.js';
 import { payWithPaystack } from './paystack.js';
 import { initNotificationBell } from './notifications-ui.js';
+import { checkAndPayReferral, generateReferralCode } from './referral-helper.js';
 
 let currentUser = null;
 let currentUserData = null;
@@ -101,6 +102,7 @@ document.addEventListener('click', (e) => {
         populateHeader();
         populateRentCard();
         populateProfileCard();
+        populateReferralCard();
         await loadStatsAndContracts();
         initNotificationBell(user.uid);
 
@@ -193,6 +195,63 @@ document.addEventListener('click', (e) => {
         }
     }
 
+    // ---------- REFERRAL CARD ----------
+    function populateReferralCard() {
+        let code = currentUserData.referralCode || '';
+        const count = currentUserData.referralCount || 0;
+        const earnings = currentUserData.referralEarnings || 0;
+        const credit = currentUserData.rentCredit || 0;
+
+        // If no code yet, generate one now (existing users pre-signup-fix)
+        if (!code && currentUserData.role === 'freelancer') {
+            generateReferralCode(currentUser.uid).then(newCode => {
+                currentUserData.referralCode = newCode;
+                populateReferralCard(); // re-render with code
+            }).catch(console.error);
+        }
+
+        const refLink = code ? `${window.location.origin}/signup.html?ref=${code}` : '';
+        const card = document.getElementById('referralCard');
+        if (!card) return;
+
+        card.innerHTML = `
+            <div class="card-label">Referral Program</div>
+            <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:10px;">
+                Share your link. When someone signs up, verifies their NIN, and completes their first task — you earn rent credit set by admin.
+            </p>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                    <span>Successful referrals</span><strong>${count}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                    <span>Total earned</span><strong>${formatNaira(earnings)}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                    <span>Rent credit balance</span><strong>${formatNaira(credit)}</strong>
+                </div>
+            </div>
+            ${refLink ? `
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input id="refLinkInput" value="${refLink}" readonly
+                    style="flex:1; background:var(--bg-main); border:1px solid var(--border-color);
+                    border-radius:10px; padding:10px 12px; font-size:0.75rem; color:var(--text-primary); cursor:pointer;">
+                <button id="copyRefBtn" class="mini-btn" style="white-space:nowrap;">Copy Link</button>
+            </div>` : '<p style="font-size:0.8rem; color:var(--text-secondary);">Generating your referral code...</p>'}
+        `;
+
+        document.getElementById('copyRefBtn')?.addEventListener('click', () => {
+            navigator.clipboard.writeText(refLink).then(() => {
+                const btn = document.getElementById('copyRefBtn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+            });
+        });
+
+        document.getElementById('refLinkInput')?.addEventListener('click', function() {
+            this.select();
+        });
+    }
+
     // ---------- STATS + ACTIVE CONTRACTS ----------
     async function loadStatsAndContracts() {
         const list = document.getElementById('contractsList');
@@ -211,6 +270,9 @@ document.addEventListener('click', (e) => {
         const active = all.filter(c => c.status === 'active');
         const completed = all.filter(c => c.status === 'completed');
         const totalEarned = completed.reduce((sum, c) => sum + (c.payoutsEarned || 0), 0);
+
+        // Check referral conditions whenever dashboard loads (non-blocking)
+        if (completed.length >= 1) checkAndPayReferral(currentUser.uid).catch(() => {});
 
         document.getElementById('statActiveContracts').textContent = active.length;
         document.getElementById('statCompletedGigs').textContent = completed.length;
