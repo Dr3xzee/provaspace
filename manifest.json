@@ -2,7 +2,7 @@
   "name": "Provaspace",
   "short_name": "Provaspace",
   "description": "Freelance marketplace — post gigs, claim work, get paid through escrow.",
-  "start_url": "/index.html",
+  "start_url": "/splash.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
