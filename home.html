@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#4169E1">
 <meta name="description" content="Provaspace is Nigeria's escrow-backed freelance marketplace. Clients post gigs. Freelancers claim and deliver. Payments held safely until you say so.">
 <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -25,6 +25,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#fff;color:#0a0f2e;ov
     --text-dim:#64748b;
     --border:rgba(65,105,225,0.13);
 }
+.display{font-family:'Fraunces',serif;}
 
 /* ── NAV ── */
 nav{
@@ -38,26 +39,26 @@ nav{
 .nav-logo img{width:32px;height:32px;}
 .nav-logo span{font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:-.3px;}
 .nav-actions{display:flex;align-items:center;gap:12px;}
-.nav-link{color:rgba(255,255,255,.65);text-decoration:none;font-size:0.85rem;font-weight:600;transition:color .2s;}
-.nav-link:hover{color:#fff;}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;text-decoration:none;border:none;transition:all .2s;}
 .btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 12px rgba(65,105,225,.35);}
 .btn-primary:hover{background:var(--blue-light);transform:translateY(-1px);}
-.btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.3);}
-.btn-outline:hover{border-color:#fff;}
+.nav-installed-pill{
+    display:none;align-items:center;gap:8px;
+    color:rgba(255,255,255,.55);font-size:0.8rem;font-weight:600;
+    padding:8px 14px;border:1px solid rgba(255,255,255,.15);border-radius:999px;
+}
+.nav-installed-pill i{color:#34d399;}
 
 /* ── HERO ── */
 .hero{
     min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:var(--navy);padding:100px 6vw 80px;text-align:center;position:relative;overflow:hidden;
+    background:var(--navy);padding:120px 6vw 80px;text-align:center;position:relative;overflow:hidden;
 }
-/* subtle grid */
 .hero::before{
     content:'';position:absolute;inset:0;
     background-image:radial-gradient(rgba(65,105,225,.18) 1px,transparent 1px);
     background-size:36px 36px;pointer-events:none;
 }
-/* blue glow */
 .hero::after{
     content:'';position:absolute;top:-10%;left:50%;transform:translateX(-50%);
     width:900px;height:600px;border-radius:50%;
@@ -75,23 +76,28 @@ nav{
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(.8);}}
 
 .hero h1{
-    font-size:clamp(2.6rem,7vw,5.2rem);font-weight:800;line-height:1.08;
+    font-family:'Fraunces',serif;
+    font-size:clamp(2.6rem,7vw,5.2rem);font-weight:600;line-height:1.05;
     color:#fff;max-width:780px;margin:0 auto 24px;position:relative;z-index:1;
-    letter-spacing:-.03em;
+    letter-spacing:-.02em;
 }
-.hero h1 em{font-style:normal;color:var(--amber);}
+.hero h1 em{
+    font-style:italic;font-weight:500;
+    background:linear-gradient(100deg,var(--amber),#ffd382);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+}
 
 .hero-sub{
     font-size:clamp(1rem,2.2vw,1.2rem);color:rgba(255,255,255,.6);
     max-width:520px;margin:0 auto 44px;line-height:1.65;position:relative;z-index:1;
 }
 
-.hero-actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1;}
+.hero-actions{display:flex;flex-direction:column;align-items:center;gap:16px;position:relative;z-index:1;width:100%;}
 
 .install-btn{
     display:inline-flex;align-items:center;gap:10px;
     background:linear-gradient(135deg,#4169E1,#5b82f0);color:#fff;
-    padding:15px 30px;border-radius:14px;font-size:1rem;font-weight:800;
+    padding:17px 34px;border-radius:14px;font-size:1.05rem;font-weight:800;
     cursor:pointer;border:none;box-shadow:0 4px 24px rgba(65,105,225,.45);
     transition:all .2s;
 }
@@ -100,22 +106,39 @@ nav{
 .install-btn i{font-size:1.1rem;}
 .install-btn.hidden{display:none;}
 
-.login-btn{
-    display:inline-flex;align-items:center;gap:8px;
-    color:rgba(255,255,255,.7);text-decoration:none;
-    font-size:0.9rem;font-weight:600;transition:color .2s;
-}
-.login-btn:hover{color:#fff;}
+.install-platform-row{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.35);font-size:0.75rem;font-weight:600;}
+.install-platform-row i{font-size:0.9rem;color:rgba(255,255,255,.45);}
 
-.hero-note{
-    margin-top:18px;font-size:0.75rem;color:rgba(255,255,255,.35);
-    position:relative;z-index:1;
+/* Phone mockup */
+.hero-phone{
+    position:relative;z-index:1;margin-top:56px;
+    width:220px;height:456px;border-radius:38px;
+    background:#111633;border:6px solid #1c2350;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+    display:flex;flex-direction:column;align-items:center;
+    padding:18px 14px;
 }
+.hero-phone::before{
+    content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:70px;height:18px;background:#0a0f2e;border-radius:0 0 12px 12px;
+}
+.phone-app-icon{
+    width:56px;height:56px;border-radius:16px;margin-top:34px;
+    background:linear-gradient(135deg,var(--blue),var(--blue-light));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 20px rgba(65,105,225,.5);
+    animation:iconDrop .6s cubic-bezier(.34,1.56,.64,1) .3s both;
+}
+.phone-app-icon img{width:30px;height:30px;}
+@keyframes iconDrop{from{transform:translateY(-14px) scale(.8);opacity:0;}to{transform:translateY(0) scale(1);opacity:1;}}
+.phone-app-label{margin-top:8px;font-size:0.68rem;color:rgba(255,255,255,.55);font-weight:600;}
+.phone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px;width:100%;}
+.phone-ghost-icon{width:100%;aspect-ratio:1;border-radius:13px;background:rgba(255,255,255,.05);}
 
 /* ── HOW IT WORKS ── */
 .section{padding:96px 6vw;}
 .section-label{font-size:0.8rem;font-weight:700;color:var(--blue);letter-spacing:.5px;margin-bottom:14px;}
-.section h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;line-height:1.15;letter-spacing:-.02em;max-width:640px;}
+.section h2{font-family:'Fraunces',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:600;line-height:1.15;letter-spacing:-.01em;max-width:640px;}
 .section p.lead{font-size:1rem;color:var(--text-dim);margin-top:14px;line-height:1.7;max-width:540px;}
 
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:56px;}
@@ -179,7 +202,7 @@ nav{
 .trust-section p.lead{margin:14px auto 0;}
 .trust-stats{display:flex;justify-content:center;gap:64px;margin-top:56px;flex-wrap:wrap;}
 .stat-block{text-align:center;}
-.stat-num{font-size:2.8rem;font-weight:800;color:var(--blue);letter-spacing:-.03em;line-height:1;}
+.stat-num{font-family:'Fraunces',serif;font-size:2.8rem;font-weight:600;color:var(--blue);letter-spacing:-.02em;line-height:1;}
 .stat-desc{font-size:0.8rem;color:var(--text-dim);margin-top:6px;font-weight:600;}
 
 /* ── FOR WHO ── */
@@ -191,19 +214,20 @@ nav{
 }
 .who-card.freelancer{background:var(--navy);color:#fff;}
 .who-card.client{background:var(--blue);color:#fff;}
-.who-card h3{font-size:1.5rem;font-weight:800;}
+.who-card h3{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:600;}
 .who-card p{font-size:0.9rem;line-height:1.7;opacity:.75;}
 .who-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
 .who-list li{display:flex;align-items:flex-start;gap:10px;font-size:0.875rem;opacity:.85;}
 .who-list li i{margin-top:3px;flex-shrink:0;color:var(--amber);}
-.who-card a{
+.who-card button.who-install{
     display:inline-flex;align-items:center;gap:8px;
     background:rgba(255,255,255,.15);color:#fff;
     padding:12px 22px;border-radius:10px;font-size:0.85rem;font-weight:700;
     text-decoration:none;border:1px solid rgba(255,255,255,.25);
     transition:all .2s;margin-top:auto;align-self:flex-start;
+    cursor:pointer;font-family:inherit;
 }
-.who-card a:hover{background:rgba(255,255,255,.25);}
+.who-card button.who-install:hover{background:rgba(255,255,255,.25);}
 
 /* ── INSTALL CTA ── */
 .cta-section{
@@ -216,8 +240,9 @@ nav{
     pointer-events:none;
 }
 .cta-section h2{
-    font-size:clamp(2rem,5vw,3.5rem);font-weight:800;color:#fff;
-    letter-spacing:-.03em;line-height:1.1;max-width:600px;margin:0 auto 16px;
+    font-family:'Fraunces',serif;
+    font-size:clamp(2rem,5vw,3.5rem);font-weight:600;color:#fff;
+    letter-spacing:-.02em;line-height:1.1;max-width:600px;margin:0 auto 16px;
     position:relative;z-index:1;
 }
 .cta-section p{color:rgba(255,255,255,.55);font-size:1rem;margin-bottom:40px;position:relative;z-index:1;}
@@ -244,6 +269,41 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
 .footer-links a{font-size:0.78rem;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
 .footer-links a:hover{color:rgba(255,255,255,.65);}
 
+/* ── iOS INSTALL MODAL ── */
+.ios-modal-overlay{
+    position:fixed;inset:0;z-index:1000;
+    background:rgba(10,15,46,.7);backdrop-filter:blur(6px);
+    display:flex;align-items:flex-end;justify-content:center;
+    opacity:0;visibility:hidden;transition:all .25s ease;
+}
+.ios-modal-overlay.active{opacity:1;visibility:visible;}
+.ios-modal-card{
+    background:#fff;border-radius:24px 24px 0 0;
+    width:100%;max-width:460px;padding:28px 26px 34px;
+    transform:translateY(24px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow:0 -20px 60px rgba(0,0,0,.3);
+}
+@media(min-width:600px){
+    .ios-modal-overlay{align-items:center;}
+    .ios-modal-card{border-radius:24px;}
+}
+.ios-modal-overlay.active .ios-modal-card{transform:translateY(0);}
+.ios-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.ios-modal-head h3{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;}
+.ios-modal-close{
+    width:32px;height:32px;border-radius:50%;border:none;background:var(--grey);
+    color:var(--navy);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.ios-steps{display:flex;flex-direction:column;gap:14px;}
+.ios-step{display:flex;align-items:flex-start;gap:14px;}
+.ios-step-num{
+    width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;
+    font-size:0.8rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.ios-step p{font-size:0.9rem;color:var(--navy);line-height:1.5;padding-top:3px;}
+.ios-step p i{color:var(--blue);margin:0 3px;}
+.ios-step strong{font-weight:800;}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
     .steps{grid-template-columns:1fr;}
@@ -251,6 +311,7 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
     .features-grid{grid-template-columns:1fr 1fr;}
     .who-grid{grid-template-columns:1fr;}
     .trust-stats{gap:36px;}
+    .hero-phone{display:none;}
 }
 @media(max-width:600px){
     nav{padding:0 4vw;}
@@ -262,7 +323,6 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
     .who-section{padding:64px 5vw;}
     .cta-section{padding:72px 5vw;}
     footer{flex-direction:column;align-items:flex-start;}
-    .nav-actions .btn-outline{display:none;}
 }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -276,9 +336,8 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
         <span>Provaspace</span>
     </a>
     <div class="nav-actions">
-        <a href="login.html" class="nav-link">Log in</a>
-        <a href="signup.html" class="btn btn-outline">Sign up</a>
-        <button class="btn btn-primary install-btn hidden" id="navInstallBtn" style="padding:9px 18px;font-size:0.85rem;">
+        <span class="nav-installed-pill" id="navInstalledPill"><i class="fa-solid fa-circle-check"></i> App installed</span>
+        <button class="btn btn-primary install-btn" id="navInstallBtn" style="padding:9px 18px;font-size:0.85rem;">
             <i class="fa-solid fa-download"></i> Install App
         </button>
     </div>
@@ -287,22 +346,33 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
 <!-- ── HERO ── -->
 <section class="hero">
     <div class="hero-badge"><span></span> Nigeria's escrow-backed freelance platform</div>
-    <h1>Work. Deliver.<br><em>Get Paid.</em></h1>
+    <h1>Work. Deliver.<br><em>Get paid.</em></h1>
     <p class="hero-sub">
-        Provaspace holds payments in escrow so freelancers always get paid and clients only release funds when they're satisfied.
+        Provaspace holds payments in escrow so freelancers always get paid and clients only release funds when they're satisfied. It's an app, not a website — install it once and it lives on your home screen.
     </p>
     <div class="hero-actions">
-        <button class="install-btn hidden" id="heroInstallBtn">
+        <button class="install-btn" id="heroInstallBtn">
             <i class="fa-solid fa-download"></i>
             Install Provaspace
         </button>
-        <a href="signup.html" class="install-btn" id="heroSignupBtn">
-            <i class="fa-solid fa-arrow-right"></i>
-            Get Started Free
-        </a>
-        <a href="login.html" class="login-btn">Already have an account <i class="fa-solid fa-arrow-right" style="font-size:.8rem;"></i></a>
+        <div class="install-platform-row" id="platformHint">
+            <i class="fa-brands fa-android"></i><span>Android</span>
+            <span style="opacity:.4;">·</span>
+            <i class="fa-brands fa-apple"></i><span>iOS</span>
+            <span style="opacity:.4;">·</span>
+            <i class="fa-solid fa-desktop"></i><span>Desktop</span>
+        </div>
     </div>
-    <p class="hero-note">Free to join · Works on any device · Installs like a native app</p>
+
+    <!-- Phone mockup: what "installed" looks like -->
+    <div class="hero-phone">
+        <div class="phone-app-icon"><img src="icons/icon-192.svg" alt=""></div>
+        <div class="phone-app-label">Provaspace</div>
+        <div class="phone-grid">
+            <div class="phone-ghost-icon"></div><div class="phone-ghost-icon"></div><div class="phone-ghost-icon"></div><div class="phone-ghost-icon"></div>
+            <div class="phone-ghost-icon"></div><div class="phone-ghost-icon"></div><div class="phone-ghost-icon"></div><div class="phone-ghost-icon"></div>
+        </div>
+    </div>
 </section>
 
 <!-- ── HOW IT WORKS ── -->
@@ -470,7 +540,7 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
 <section class="who-section">
     <div style="max-width:1100px;margin:0 auto;">
         <div class="section-label">Who it's for</div>
-        <h2>Two sides, one platform</h2>
+        <h2>Two sides, one app</h2>
         <div class="who-grid">
             <div class="who-card freelancer">
                 <h3>Freelancers</h3>
@@ -482,7 +552,7 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
                     <li><i class="fa-solid fa-check"></i> Withdraw to your bank account anytime</li>
                     <li><i class="fa-solid fa-check"></i> Earn rent credits by referring others</li>
                 </ul>
-                <a href="signup.html">Join as a Freelancer <i class="fa-solid fa-arrow-right"></i></a>
+                <button class="who-install install-btn-trigger"><i class="fa-solid fa-download"></i> Install to join as a Freelancer</button>
             </div>
             <div class="who-card client">
                 <h3>Clients</h3>
@@ -494,7 +564,7 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
                     <li><i class="fa-solid fa-check"></i> Dispute resolution if anything goes wrong</li>
                     <li><i class="fa-solid fa-check"></i> Optional insurance on every gig</li>
                 </ul>
-                <a href="signup.html">Join as a Client <i class="fa-solid fa-arrow-right"></i></a>
+                <button class="who-install install-btn-trigger"><i class="fa-solid fa-download"></i> Install to join as a Client</button>
             </div>
         </div>
     </div>
@@ -505,16 +575,12 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
     <h2>Works on every device.<br>Installs in seconds.</h2>
     <p>No app store. No waiting. Just tap Install and it's on your home screen.</p>
     <div class="cta-actions">
-        <button class="install-btn hidden" id="ctaInstallBtn" style="font-size:1.05rem;padding:17px 36px;">
+        <button class="install-btn" id="ctaInstallBtn" style="font-size:1.05rem;padding:17px 36px;">
             <i class="fa-solid fa-download"></i>
             Install Provaspace — it's free
         </button>
-        <a href="signup.html" class="install-btn" id="ctaSignupBtn" style="font-size:1.05rem;padding:17px 36px;">
-            <i class="fa-solid fa-arrow-right"></i>
-            Open in Browser
-        </a>
         <div class="install-steps">
-            <div class="step-pill"><i class="fa-solid fa-globe"></i> Open in browser</div>
+            <div class="step-pill"><i class="fa-solid fa-globe"></i> Open this page</div>
             <span class="step-sep">→</span>
             <div class="step-pill"><i class="fa-solid fa-download"></i> Tap Install</div>
             <span class="step-sep">→</span>
@@ -529,55 +595,105 @@ footer p{font-size:0.78rem;color:rgba(255,255,255,.25);}
         <img src="icons/icon-192.svg" alt="Provaspace">
         <span>Provaspace</span>
     </a>
-    <p>© 2026 Provaspace · Addro Tech</p>
+    <p>© 2026 Provaspace · <a href="https://addrotech.com.ng" style="text-decoration: none; color: rgb(60, 58, 58);">Addro Tech</p></a>
     <div class="footer-links">
-        <a href="login.html">Log in</a>
-        <a href="signup.html">Sign up</a>
-        <a href="index.html">Dashboard</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
     </div>
 </footer>
+
+<!-- ── iOS INSTALL INSTRUCTIONS MODAL ── -->
+<div class="ios-modal-overlay" id="iosModalOverlay">
+    <div class="ios-modal-card">
+        <div class="ios-modal-head">
+            <h3>Add to Home Screen</h3>
+            <button class="ios-modal-close" id="iosModalClose">&times;</button>
+        </div>
+        <div class="ios-steps">
+            <div class="ios-step">
+                <div class="ios-step-num">1</div>
+                <p>Tap the <strong>Share</strong> icon <i class="fa-solid fa-arrow-up-from-bracket"></i> in Safari's toolbar.</p>
+            </div>
+            <div class="ios-step">
+                <div class="ios-step-num">2</div>
+                <p>Scroll down and tap <strong>Add to Home Screen</strong> <i class="fa-solid fa-square-plus"></i>.</p>
+            </div>
+            <div class="ios-step">
+                <div class="ios-step-num">3</div>
+                <p>Tap <strong>Add</strong> in the top corner — Provaspace is now on your home screen.</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 // ── PWA INSTALL ────────────────────────────────────────────────────
 let deferredPrompt = null;
 
-const installBtns = document.querySelectorAll('.install-btn[id$="InstallBtn"]');
-const signupBtns  = document.querySelectorAll('.install-btn[id$="SignupBtn"]');
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+const installBtns = document.querySelectorAll('.install-btn, .install-btn-trigger');
+const navInstalledPill = document.getElementById('navInstalledPill');
+const iosModalOverlay = document.getElementById('iosModalOverlay');
+const iosModalClose = document.getElementById('iosModalClose');
 
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-
-    // Show install buttons, hide signup fallbacks
-    installBtns.forEach(b => b.classList.remove('hidden'));
-    signupBtns.forEach(b => b.classList.add('hidden'));
 });
 
 async function triggerInstall() {
-    if (!deferredPrompt) {
-        // Already installed or not supported — go to signup
-        window.location.href = 'signup.html';
+    if (isStandalone) return; // already installed, nothing to do
+
+    if (deferredPrompt) {
+        // Android / Chrome / Edge / desktop — native prompt
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        if (outcome === 'accepted') markInstalled();
         return;
     }
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    if (outcome === 'accepted') {
-        installBtns.forEach(b => {
-            b.innerHTML = '<i class="fa-solid fa-check"></i> Installed!';
-            b.style.background = 'linear-gradient(135deg,#10b981,#059669)';
-            b.disabled = true;
-        });
-        setTimeout(() => { window.location.href = 'signup.html'; }, 1200);
+
+    if (isIOS) {
+        // iOS Safari has no install API — show manual steps
+        iosModalOverlay.classList.add('active');
+        return;
     }
+
+    // Fallback: unsupported browser or already-installed edge case
+    iosModalOverlay.classList.add('active');
+    document.querySelector('.ios-modal-head h3').textContent = 'Install Provaspace';
+    document.querySelector('.ios-steps').innerHTML =
+        '<p style="font-size:0.9rem;color:var(--navy);line-height:1.6;">' +
+        'Your browser doesn\'t support one-tap install. Open this page in Chrome (Android) or Safari (iOS) to install Provaspace as an app.' +
+        '</p>';
+}
+
+function markInstalled() {
+    installBtns.forEach(b => {
+        b.innerHTML = '<i class="fa-solid fa-check"></i> Installed!';
+        b.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+        b.disabled = true;
+    });
 }
 
 installBtns.forEach(b => b.addEventListener('click', triggerInstall));
 
-// Already installed — hide the install prompt if running standalone
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    installBtns.forEach(b => b.classList.add('hidden'));
-    signupBtns.forEach(b => b.classList.remove('hidden'));
+if (iosModalClose) {
+    iosModalClose.addEventListener('click', () => iosModalOverlay.classList.remove('active'));
+}
+iosModalOverlay.addEventListener('click', (e) => {
+    if (e.target === iosModalOverlay) iosModalOverlay.classList.remove('active');
+});
+
+// If already running as installed PWA, swap CTAs for a status pill
+if (isStandalone) {
+    document.querySelectorAll('.hero-actions, .cta-actions').forEach(el => el.style.display = 'none');
+    if (navInstalledPill) {
+        navInstalledPill.style.display = 'flex';
+        document.getElementById('navInstallBtn').style.display = 'none';
+    }
 }
 
 // Register SW for caching

@@ -3,6 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+(function () {
+    function isStandalone() {
+        // Standard PWA display-mode check (Android, desktop Chrome/Edge, most installed PWAs)
+        const isDisplayModeStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+        // iOS Safari "Add to Home Screen" flag
+        const isIOSStandalone = window.navigator.standalone === true;
+
+        // Some Android/TWA wrappers report this
+        const isMinimalUI = window.matchMedia('(display-mode: minimal-ui)').matches;
+        const isFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
+
+        return isDisplayModeStandalone || isIOSStandalone || isMinimalUI || isFullscreen;
+    }
+
+    if (!isStandalone()) {
+        window.location.replace('home.html');
+    }
+})();
+</script>
     <title>Provaspace — Overview</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1207,6 +1228,128 @@
         .dashboard-scroll > *:nth-child(4) { animation-delay: 0.2s; }
         .dashboard-scroll > *:nth-child(5) { animation-delay: 0.25s; }
         .dashboard-scroll > *:nth-child(6) { animation-delay: 0.3s; }
+
+        /* ── Help Button + Course Modal ── */
+.help-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(65, 105, 225, 0.4);
+    transition: var(--transition);
+    animation: helpPulse 2.6s ease-in-out infinite;
+}
+
+.help-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(65, 105, 225, 0.5);
+    animation-play-state: paused;
+}
+
+.help-fab i {
+    font-size: 1rem;
+}
+
+@keyframes helpPulse {
+    0%, 100% { box-shadow: 0 8px 24px rgba(65, 105, 225, 0.4); }
+    50% { box-shadow: 0 8px 24px rgba(65, 105, 225, 0.4), 0 0 0 8px rgba(65, 105, 225, 0.12); }
+}
+
+@media (max-width: 768px) {
+    .help-fab {
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+        right: 16px;
+        padding: 12px 16px;
+    }
+    .help-fab span { display: none; }
+}
+
+.course-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    padding: 24px;
+}
+
+.course-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.course-modal-card {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 900px;
+    height: 88vh;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.96) translateY(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.course-modal-overlay.active .course-modal-card {
+    transform: scale(1) translateY(0);
+}
+
+.course-modal-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+}
+
+.course-modal-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.course-modal-header h3 i { color: var(--primary); }
+
+.course-modal-card iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: #fff;
+}
+
+@media (max-width: 768px) {
+    .course-modal-overlay { padding: 0; }
+    .course-modal-card {
+        max-width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+}
     </style>
     <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
 </head>
@@ -1422,6 +1565,23 @@
         </div>
     </div>
 
+    <!-- Floating Help Button -->
+<button class="help-fab" id="helpFab">
+    <i class="fa-solid fa-circle-question"></i>
+    <span>Need help? Click me</span>
+</button>
+
+<!-- Course Modal -->
+<div class="course-modal-overlay" id="courseModalOverlay">
+    <div class="course-modal-card">
+        <div class="course-modal-header">
+            <h3><i class="fa-solid fa-graduation-cap"></i> Provaspace Course</h3>
+            <button class="close-modal" id="closeCourseModal">&times;</button>
+        </div>
+        <iframe id="courseFrame" src="course.html" title="Provaspace Course"></iframe>
+    </div>
+</div>
+
     <script type="module" src="js/firebase.js"></script>
     <script type="module" src="js/site-status.js"></script>
     <script type="module" src="js/silver-surfer.js"></script>
@@ -1446,6 +1606,37 @@
                 sidebarOverlay.classList.remove('active');
             });
         }
+
+        // Help button → course modal
+const helpFab = document.getElementById('helpFab');
+const courseModalOverlay = document.getElementById('courseModalOverlay');
+const closeCourseModal = document.getElementById('closeCourseModal');
+const courseFrame = document.getElementById('courseFrame');
+
+if (helpFab && courseModalOverlay) {
+    helpFab.addEventListener('click', () => {
+        if (!courseFrame.src) courseFrame.src = 'course.html'; // lazy-load on first open
+        courseModalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+}
+
+if (closeCourseModal) {
+    closeCourseModal.addEventListener('click', () => {
+        courseModalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+}
+
+if (courseModalOverlay) {
+    courseModalOverlay.addEventListener('click', (e) => {
+        if (e.target === courseModalOverlay) {
+            courseModalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+}
     </script>
+    <a href="https://addrotech.com.ng"></a>
 </body>
 </html>
