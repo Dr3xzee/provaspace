@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provaspace - Loading</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4169E1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .splash-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
+            animation: fadeInZoom 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Logo Card Animation */
+        .logo-box {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.25);
+            position: relative;
+            animation: floatLogo 3s ease-in-out infinite alternate;
+        }
+
+        /* White document shape inside */
+        .doc-shape {
+            width: 64px;
+            height: 76px;
+            background-color: #ffffff;
+            border-radius: 8px 18px 8px 8px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: slideUpDoc 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Folded corner effect */
+        .doc-shape::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, transparent 50%, #cbd5e1 50%);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Checkmark icon */
+        .checkmark {
+            width: 32px;
+            height: 16px;
+            border-left: 5px solid #2563eb;
+            border-bottom: 5px solid #2563eb;
+            transform: rotate(-45deg) translate(2px, -2px);
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+            animation: drawCheck 0.6s 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* App Name Typography */
+        .app-name {
+            margin-top: 28px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeSlideUp 0.8s 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .app-name span {
+            color: #2563eb;
+        }
+
+        /* Sleek Loading Bar */
+        .loader-track {
+            margin-top: 24px;
+            width: 140px;
+            height: 4px;
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.5s 1.2s forwards;
+        }
+
+        .loader-thumb {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            transform: translateX(-100%);
+            animation: loadProgress 8s 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* Keyframe Definitions */
+        @keyframes fadeInZoom {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes floatLogo {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+                box-shadow: 0 20px 40px rgba(37, 99, 235, 0.25);
+            }
+            100% {
+                transform: translateY(-8px) rotate(1deg);
+                box-shadow: 0 30px 50px rgba(37, 99, 235, 0.35);
+            }
+        }
+
+        @keyframes slideUpDoc {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes drawCheck {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeSlideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes loadProgress {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(0%);
+            }
+        }
+
+        /* Exit Transition Animation */
+        body.exit {
+            animation: fadeOutExit 0.8s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+
+        @keyframes fadeOutExit {
+            to {
+                opacity: 0;
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="splash-container">
+        <div class="logo-box">
+            <div class="doc-shape">
+                <div class="checkmark"></div>
+            </div>
+        </div>
+
+        <h1 class="app-name">prova<span>space</span></h1>
+
+        <div class="loader-track">
+            <div class="loader-thumb"></div>
+        </div>
+    </div>
+
+    <script>
+        // Total duration set to 10 seconds (10000 milliseconds)
+        const totalDuration = 10000;
+        const fadeOutDuration = 800; // matches CSS exit animation duration
+
+        setTimeout(() => {
+            // Trigger exit fade out
+            document.body.classList.add('exit');
+
+            // Redirect to index.html after exit animation completes
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, fadeOutDuration);
+
+        }, totalDuration - fadeOutDuration);
+    </script>
+</body>
+</html>

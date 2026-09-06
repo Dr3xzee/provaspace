@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Provaspace Course — Learn the Space</title>
+<style>
+  :root{
+    --blue:#5a7ff7;
+    --blue-deep:#3d5fd6;
+    --blue-pale:#eef1ff;
+    --ink:#151824;
+    --muted:#6b7284;
+    --line:#e7e9f2;
+    --paper:#ffffff;
+    --green:#16a34a;
+    --green-pale:#f0fdf4;
+    --amber:#d97706;
+    --amber-pale:#fffbeb;
+    --red:#dc2626;
+    --red-pale:#fef2f2;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+    line-height:1.6;
+  }
+
+  header.hero{
+    background:var(--paper);
+    padding:60px 24px 0;
+    max-width:820px;
+    margin:0 auto;
+  }
+  .kicker{
+    font-size:13px;
+    font-weight:700;
+    color:var(--blue);
+    letter-spacing:.03em;
+    margin-bottom:12px;
+  }
+  h1{
+    font-size:clamp(32px,5vw,46px);
+    line-height:1.1;
+    margin:0 0 16px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .hero p.lead{
+    font-size:18px;
+    color:var(--muted);
+    max-width:56ch;
+    margin:0 0 32px;
+  }
+
+  nav.toc{
+    max-width:820px;
+    margin:0 auto 56px;
+    background:var(--blue-pale);
+    border-radius:14px;
+    padding:24px 28px;
+  }
+  nav.toc h2{
+    font-size:12.5px;
+    color:var(--blue-deep);
+    margin:0 0 14px;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  nav.toc ol{
+    columns:2;
+    column-gap:24px;
+    margin:0; padding:0;
+    list-style:none;
+  }
+  nav.toc li{break-inside:avoid; margin-bottom:8px;}
+  nav.toc a{
+    font-size:14.5px;
+    color:var(--ink);
+    text-decoration:none;
+    display:flex;
+    gap:9px;
+  }
+  nav.toc a:hover{color:var(--blue);}
+  nav.toc .n{
+    color:var(--blue);
+    font-weight:700;
+    min-width:20px;
+  }
+
+  main{max-width:820px; margin:0 auto; padding:0 24px 40px;}
+
+  section.topic{
+    padding:52px 0;
+    border-bottom:1px solid var(--line);
+    scroll-margin-top:24px;
+  }
+  section.topic:first-of-type{padding-top:0;}
+  .topic-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .topic-num{
+    font-size:14px;
+    color:var(--paper);
+    background:var(--blue);
+    font-weight:700;
+    width:30px; height:30px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .topic h2{
+    font-size:25px;
+    margin:0;
+    font-weight:700;
+  }
+  .audience-tag{
+    font-size:11.5px;
+    color:var(--blue-deep);
+    background:var(--blue-pale);
+    padding:3px 10px;
+    border-radius:20px;
+    font-weight:600;
+    margin-left:auto;
+  }
+  .topic p{
+    color:#2c3140;
+    font-size:16.5px;
+    max-width:68ch;
+    margin:0 0 10px;
+  }
+  .topic p:last-of-type{margin-bottom:0;}
+
+  ol.steps{
+    list-style:none;
+    counter-reset:step;
+    padding-left:0;
+    margin-top:20px;
+  }
+  ol.steps li{
+    counter-increment:step;
+    position:relative;
+    padding-left:40px;
+    margin-bottom:16px;
+    font-size:16px;
+    color:#2c3140;
+  }
+  ol.steps li::before{
+    content:counter(step);
+    position:absolute;
+    left:0; top:0;
+    width:26px; height:26px;
+    border-radius:8px;
+    background:var(--blue-pale);
+    color:var(--blue-deep);
+    font-size:13px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .shot{
+    margin-top:22px;
+    border:1.5px dashed #c2cbf5;
+    border-radius:12px;
+    background:var(--blue-pale);
+    width:100%;
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    color:var(--blue-deep);
+    min-height:140px;
+  }
+  .shot img{
+    width:100%; height:auto;
+    display:block;
+    border-radius:8px;
+    padding:0;
+  }
+  /* when img is present, remove the placeholder padding */
+  .shot:has(img){ padding:0; background:none; border-style:solid; border-color:#e2e8f0; }
+  .shot span{
+    font-size:12.5px;
+    font-weight:600;
+    text-align:center;
+  }
+  .shot small{
+    font-size:11px;
+    font-weight:400;
+    color:#8892b0;
+  }
+  .shot-label{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--muted);
+    margin-top:8px;
+    text-align:center;
+    letter-spacing:.02em;
+  }
+
+  .dual{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:18px;
+  }
+  @media (max-width:620px){
+    .dual{grid-template-columns:1fr;}
+    nav.toc ol{columns:1;}
+  }
+  .dual .col{
+    background:var(--blue-pale);
+    border-radius:12px;
+    padding:18px 18px 14px;
+  }
+  .dual .col h3{
+    font-size:12px;
+    color:var(--blue-deep);
+    margin:0 0 8px;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  .dual .col p{margin-top:0; font-size:15px;}
+
+  .callout{
+    margin-top:18px;
+    border-radius:12px;
+    padding:16px 18px;
+    font-size:15px;
+    color:#2c3140;
+    line-height:1.55;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .callout.blue{ background:var(--blue-pale); border-left:3px solid var(--blue); }
+  .callout.green{ background:var(--green-pale); border-left:3px solid var(--green); }
+  .callout.amber{ background:var(--amber-pale); border-left:3px solid var(--amber); }
+  .callout.red{ background:var(--red-pale); border-left:3px solid var(--red); }
+  .callout .ico{ font-size:17px; flex-shrink:0; margin-top:1px; }
+  .callout strong{ display:block; margin-bottom:3px; font-size:13px; letter-spacing:.01em; }
+
+  .pill-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:16px;
+  }
+  .pill{
+    font-size:13.5px;
+    font-weight:600;
+    padding:6px 14px;
+    border-radius:20px;
+    background:var(--blue-pale);
+    color:var(--blue-deep);
+  }
+  .pill.red{ background:var(--red-pale); color:var(--red); }
+  .pill.green{ background:var(--green-pale); color:var(--green); }
+  .pill.amber{ background:var(--amber-pale); color:var(--amber); }
+
+  .faq{ margin-top:20px; display:flex; flex-direction:column; gap:2px; }
+  .faq-item{ border-radius:10px; overflow:hidden; }
+  .faq-q{
+    width:100%; text-align:left;
+    background:var(--blue-pale);
+    border:none;
+    padding:14px 16px;
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    font-family:inherit;
+  }
+  .faq-q:hover{ background:#e0e7ff; }
+  .faq-a{
+    display:none;
+    padding:14px 16px;
+    font-size:15px;
+    color:#2c3140;
+    background:#f5f7ff;
+    border-top:1px solid #d8dff8;
+    line-height:1.6;
+  }
+  .faq-item.open .faq-a{ display:block; }
+  .faq-item.open .faq-q .arr{ transform:rotate(180deg); }
+  .arr{ transition:transform .2s; display:inline-block; font-size:12px; color:var(--muted); }
+
+  .pending{
+    font-size:13px;
+    color:var(--blue-deep);
+    background:var(--blue-pale);
+    padding:9px 14px;
+    border-radius:8px;
+    display:inline-block;
+    margin-top:6px;
+    font-weight:600;
+  }
+
+  footer{
+    max-width:820px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+    color:var(--muted);
+    font-size:13px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">PROVASPACE COURSE</div>
+  <h1>Learn your way around the Space.</h1>
+  <p class="lead">A plain-language walkthrough of everything on Provaspace — how rent and tax pass work, what keeps you protected, and how to use the Space efficiently.</p>
+</header>
+
+<nav class="toc">
+  <h2>ON THIS PAGE</h2>
+  <ol>
+    <li><a href="#t1"><span class="n">01</span> Tax Pass</a></li>
+    <li><a href="#t2"><span class="n">02</span> Rent</a></li>
+    <li><a href="#t3"><span class="n">03</span> Silver Surfer</a></li>
+    <li><a href="#t4"><span class="n">04</span> Insurance &amp; Assurance</a></li>
+    <li><a href="#t5"><span class="n">05</span> Trust Score</a></li>
+    <li><a href="#t6"><span class="n">06</span> Privacy Policy</a></li>
+    <li><a href="#t7"><span class="n">07</span> Terms &amp; Conditions</a></li>
+    <li><a href="#t8"><span class="n">08</span> What Gets You Banned</a></li>
+    <li><a href="#t9"><span class="n">09</span> What Gets You Suspended</a></li>
+    <li><a href="#t10"><span class="n">10</span> What's the Space</a></li>
+    <li><a href="#t11"><span class="n">11</span> Withdrawals &amp; Minimum</a></li>
+    <li><a href="#t12"><span class="n">12</span> Referrals</a></li>
+    <li><a href="#t13"><span class="n">13</span> Your Profile &amp; NIN</a></li>
+    <li><a href="#t14"><span class="n">14</span> Milestones &amp; Escrow</a></li>
+    <li><a href="#t15"><span class="n">15</span> Contracts &amp; How Jobs Work</a></li>
+    <li><a href="#t16"><span class="n">16</span> Disputes</a></li>
+    <li><a href="#t17"><span class="n">17</span> Direct Hire</a></li>
+    <li><a href="#t18"><span class="n">18</span> A Hope for What's Next</a></li>
+  </ol>
+</nav>
+
+<main>
+
+  <!-- ══════════════════════════════ 01 TAX PASS ══════════════════════════════ -->
+  <section class="topic" id="t1">
+    <div class="topic-head"><span class="topic-num">1</span><h2>Tax Pass</h2><span class="audience-tag">Clients</span></div>
+
+    <p>Tax Pass is what a client buys to unlock the ability to post gigs on Provaspace. Without it, you can browse the platform but you can't put work out into the Space. Think of it as your client-side operating licence.</p>
+    <p>It's not a per-gig charge — you buy a Tax Pass once per tier and it covers a set number of gig posts. When you run out, you buy again.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>WHAT IT COVERS</h3>
+        <p>Each tier gives you a fixed number of gig slots. Higher tier = more gigs you can post before renewing.</p>
+      </div>
+      <div class="col">
+        <h3>PRICING</h3>
+        <p>Tiers and prices are set by the admin — check the Tax Pass card on your client dashboard for the current options.</p>
+      </div>
+    </div>
+
+    <div class="callout blue" style="margin-top:18px;">
+      <span class="ico">💡</span>
+      <div><strong>FREE TIER</strong>If admin sets a tier price to ₦0, it shows as <em>Free</em> and activates instantly — no payment screen, no Paystack.</div>
+    </div>
+
+    <div class="shot">
+      <img src="course/taxpass.png" alt="Tax Pass screen">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">What happens when my gig slots run out? <span class="arr">▾</span></button>
+        <div class="faq-a">The Post Gig button goes inactive and the form won't submit. Buy a new Tax Pass from your client dashboard to top up your slots.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Does unused Tax Pass carry over? <span class="arr">▾</span></button>
+        <div class="faq-a">No. Each purchase is a fresh set of slots. Unused slots from a previous tier don't roll over when you buy again.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 02 RENT ══════════════════════════════ -->
+  <section class="topic" id="t2">
+    <div class="topic-head"><span class="topic-num">2</span><h2>Rent</h2><span class="audience-tag">Freelancers</span></div>
+
+    <p>Rent is the freelancer's recurring subscription to the Space. It keeps your profile active and your ability to claim gigs alive. No active rent = no access to The Space.</p>
+    <p>You pick a plan that suits how often you work — weekly, monthly, or yearly. Yearly is the cheapest per day; weekly is the most flexible if you're testing the waters.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>PLANS</h3>
+        <p>Weekly, Monthly, Yearly — prices set by admin. Check your dashboard Rent card for current rates.</p>
+      </div>
+      <div class="col">
+        <h3>GRACE PERIOD</h3>
+        <p>When rent expires, you get a grace period before you're blocked. After that, an overdue fee kicks in and your account is suspended until you pay.</p>
+      </div>
+    </div>
+
+    <div class="callout green" style="margin-top:18px;">
+      <span class="ico">🎁</span>
+      <div><strong>FREE RENT VIA REFERRALS</strong>Refer someone to the Space. Once they complete their first gig, you earn free rent days — credited directly to your rent due date. No cash, just extra time in the Space.</div>
+    </div>
+
+    <div class="callout amber">
+      <span class="ico">⚠️</span>
+      <div><strong>NEW USERS</strong>If you're brand new and haven't been referred by anyone, you must pay rent before you can access the dashboard fully. There's no free trial unless you have referral credit.</div>
+    </div>
+
+    <div class="shot">
+      <img src="course/rent.png" alt="Rent plans">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">What happens if I don't pay rent on time? <span class="arr">▾</span></button>
+        <div class="faq-a">You get a grace period first (set by admin — typically a few days). During that window you can still access everything. After grace period ends, an overdue fee is added and your account is suspended. Pay off the balance to get back in.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I switch plans? <span class="arr">▾</span></button>
+        <div class="faq-a">Yes — when your current rent period expires, just pick a new plan from the Rent card on your dashboard.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">I was referred — do I still pay rent? <span class="arr">▾</span></button>
+        <div class="faq-a">You still pay rent eventually, but your referral credit gives you free days first. The days are applied to your rent due date automatically once you're credited.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 03 SILVER SURFER ══════════════════════════════ -->
+  <section class="topic" id="t3">
+    <div class="topic-head"><span class="topic-num">3</span><h2>Silver Surfer</h2></div>
+
+    <p>Silver Surfer is the Space's built-in AI support assistant — always on, always ready. It lives in the bottom-right corner of your dashboard as a floating button.</p>
+    <p>It can answer questions about the platform, help you figure out how things work, and if it can't solve your problem, it logs a support ticket automatically so admin can follow up. You get both the assistant and a ticket in one tap.</p>
+
+    <div class="shot">
+      <img src="course/silver.png" alt="The Silver Surfer button on the dashboard">
+    </div>
+    <p class="shot-label">The Silver Surfer button — bottom-right corner of your dashboard.</p>
+
+    <div class="shot">
+      <img src="course/support.png" alt="Silver Surfer chat and support ticket">
+    </div>
+    <p class="shot-label">Chat with Silver Surfer and your support ticket is created at the same time.</p>
+
+    <div class="callout blue">
+      <span class="ico">📌</span>
+      <div><strong>ON CONTRACT PAGES</strong>The Silver Surfer button sits at z-index above the chat input on contract pages so it doesn't block the send button — if it ever does, try scrolling the page slightly.</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 04 INSURANCE & ASSURANCE ══════════════════════════════ -->
+  <section class="topic" id="t4">
+    <div class="topic-head"><span class="topic-num">4</span><h2>Insurance &amp; Assurance</h2></div>
+
+    <p>These are two separate but related things — insurance is what a client adds to a gig when posting it, and assurance is what happens when something goes wrong on any contract.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>INSURANCE (CLIENT SIDE)</h3>
+        <p>When posting a gig, a client can opt into insurance. This adds a fee on top of the deposit — held by the platform as extra protection for the job.</p>
+      </div>
+      <div class="col">
+        <h3>ASSURANCE (FREELANCER SIDE)</h3>
+        <p>When a freelancer claims an insured gig, they pay a flat assurance fee before the contract is created. This fee is set by admin and held for the contract duration.</p>
+      </div>
+    </div>
+
+    <div class="callout amber">
+      <span class="ico">🛡️</span>
+      <div><strong>WHAT HAPPENS WHEN YOU CLAIM AN INSURED GIG</strong>As soon as you tap Claim, a toast notification appears telling you the gig is insured. A modal then shows the exact assurance fee. You must pay it via Paystack before the contract is created. If you close the payment screen, nothing is charged and no contract is made.</div>
+    </div>
+
+    <div class="shot">
+      <img src="course/insurance.png" alt="Insurance opt-in on a gig">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">Is the assurance fee refundable? <span class="arr">▾</span></button>
+        <div class="faq-a">Partially — if the contract completes without a dispute, the fee is considered absorbed. If a dispute is raised and resolved in your favour, admin may factor the assurance fee into the resolution.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I tell if a gig is insured before clicking Claim? <span class="arr">▾</span></button>
+        <div class="faq-a">Yes — insured gigs show a shield icon on their listing card. The gig preview modal also shows the assurance fee amount before you commit.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 05 TRUST SCORE ══════════════════════════════ -->
+  <section class="topic" id="t5">
+    <div class="topic-head"><span class="topic-num">5</span><h2>Trust Score</h2></div>
+
+    <p>Trust Score is a number between 0 and 100 that shows how reliable you've been on the platform. Every account starts at 100. It goes down when things go wrong — and admin can adjust it directly.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>WHAT LOWERS IT</h3>
+        <p>Abandoning an active contract deducts 15 points. Disputes resolved against you may also lead to a reduction. Admin can also manually adjust your score.</p>
+      </div>
+      <div class="col">
+        <h3>HOW IT'S USED</h3>
+        <p>Gigs in The Space are sorted by Trust Score — higher scores show up higher. Clients browsing freelancer profiles can see your score too.</p>
+      </div>
+    </div>
+
+    <div class="pill-row">
+      <span class="pill green">80 – 100 · Excellent</span>
+      <span class="pill amber">50 – 79 · Watch out</span>
+      <span class="pill red">0 – 49 · Flagged</span>
+    </div>
+
+    <div class="callout red">
+      <span class="ico">🔴</span>
+      <div><strong>BELOW 50</strong>Accounts with a Trust Score under 50 are visible to admin in a dedicated flagged-users panel. Admin can see when your score was last reduced and can set it to any value they choose.</div>
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">Can my Trust Score go back up? <span class="arr">▾</span></button>
+        <div class="faq-a">Only admin can raise your Trust Score. If you believe your score was reduced unfairly, raise a support ticket via Silver Surfer and explain your case.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What happens if I abandon a job? <span class="arr">▾</span></button>
+        <div class="faq-a">15 points are deducted immediately. The gig returns to The Space so another freelancer can pick it up. Your client is notified. The platform tracks how far you got (which milestones were already paid) so the next freelancer doesn't start from scratch.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 06 PRIVACY ══════════════════════════════ -->
+  <section class="topic" id="t6">
+    <div class="topic-head"><span class="topic-num">6</span><h2>Privacy Policy</h2></div>
+    <p>Provaspace doesn't use your data for anything shady. The information you provide — your name, email, NIN, bank details, and gig history — is used only to operate the platform. It is not sold, shared with advertisers, or used to profile you outside of Provaspace.</p>
+    <p>Your bank details are stored to process withdrawal requests only. NIN details are submitted for admin verification and not exposed to other users. Your wallet balance and contract history are visible only to you and to admins.</p>
+    <div class="callout blue">
+      <span class="ico">🔒</span>
+      <div>If you have a specific privacy concern, raise a support ticket via Silver Surfer and an admin will respond directly.</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 07 T&C ══════════════════════════════ -->
+  <section class="topic" id="t7">
+    <div class="topic-head"><span class="topic-num">7</span><h2>Terms &amp; Conditions</h2></div>
+    <p>By using Provaspace you agree to operate honestly — completing work you claim, paying for services rendered, and not abusing the dispute system.</p>
+    <span class="pending">Full terms — to be defined and published by the Provaspace team.</span>
+  </section>
+
+  <!-- ══════════════════════════════ 08 BANNED ══════════════════════════════ -->
+  <section class="topic" id="t8">
+    <div class="topic-head"><span class="topic-num">8</span><h2>What Gets You Banned</h2></div>
+
+    <p>A ban is the most serious action on the platform. It locks you out with a blocking overlay the moment you open your dashboard — you can't access anything until admin lifts it.</p>
+
+    <div class="pill-row" style="margin-bottom:16px;">
+      <span class="pill red">Too many disputes raised against you</span>
+      <span class="pill red">Fraud or payment abuse</span>
+      <span class="pill red">Harassment of other users</span>
+      <span class="pill red">Admin discretion</span>
+    </div>
+
+    <p>Bans are applied by admin, not automatically by the system. If you believe you've been banned unfairly, contact support — but note that appeals aren't guaranteed.</p>
+
+    <div class="shot">
+      <img src="course/ban.png" alt="Ban overlay on dashboard">
+    </div>
+
+    <div class="callout red">
+      <span class="ico">🚫</span>
+      <div><strong>DIFFERENT FROM SUSPENSION</strong>A ban is not the same as a suspension. Suspension is for rent issues and can be cleared by paying. A ban requires admin to manually restore your account.</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 09 SUSPENDED ══════════════════════════════ -->
+  <section class="topic" id="t9">
+    <div class="topic-head"><span class="topic-num">9</span><h2>What Gets You Suspended</h2></div>
+
+    <p>Suspension on Provaspace is almost always about rent. If you let your rent lapse past the grace period without paying, your account gets suspended. Your profile is still there — you just can't claim gigs or access the Space until the balance is cleared.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>HOW TO FIX IT</h3>
+        <p>Go to your dashboard, open the Rent card, and pay what's owed — including any overdue fee admin has set. Your access is restored immediately once payment goes through.</p>
+      </div>
+      <div class="col">
+        <h3>GRACE PERIOD</h3>
+        <p>You get a buffer after your rent expires before suspension kicks in. Use that window to renew — the overdue fee only applies after the grace period ends.</p>
+      </div>
+    </div>
+
+    <div class="shot">
+      <img src="course/suspend.png" alt="Suspension notice">
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 10 THE SPACE ══════════════════════════════ -->
+  <section class="topic" id="t10">
+    <div class="topic-head"><span class="topic-num">10</span><h2>What's the Space</h2></div>
+
+    <p>The Space is the central marketplace — where freelancers come to find work and where clients come to post it. It's the beating heart of Provaspace.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>FOR FREELANCERS</h3>
+        <p>Browse open gigs, filter by category, and claim jobs that match your skills. Gigs are sorted by Trust Score — higher-rated freelancers see the best listings first.</p>
+      </div>
+      <div class="col">
+        <h3>FOR CLIENTS</h3>
+        <p>Post gigs with a title, description, price, milestones, and optional insurance. Choose to post publicly to The Space or assign the gig directly to a specific freelancer.</p>
+      </div>
+    </div>
+
+    <div class="callout blue">
+      <span class="ico">📋</span>
+      <div><strong>CLAIMING RULES</strong>You can hold a maximum of 3 active contracts at once. To claim a gig you must have your NIN verified and your bank details saved on your profile — both are required before the claim goes through.</div>
+    </div>
+
+    <div class="shot">
+      <img src="course/space.png" alt="The Space home view">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">What happens if a freelancer abandons a gig I posted? <span class="arr">▾</span></button>
+        <div class="faq-a">The gig automatically returns to The Space so another freelancer can claim it. The platform records which milestones were already paid, so the next freelancer picks up from where the last one stopped — you don't lose progress.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Why can I only hold 3 active contracts? <span class="arr">▾</span></button>
+        <div class="faq-a">It's a quality control limit — to protect clients from freelancers who overcommit and then rush or abandon work. Three is the current cap set by the platform.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can a client pick me specifically instead of posting to everyone? <span class="arr">▾</span></button>
+        <div class="faq-a">Yes — see the Direct Hire section below.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 11 WITHDRAWALS ══════════════════════════════ -->
+  <section class="topic" id="t11">
+    <div class="topic-head"><span class="topic-num">11</span><h2>Withdrawals &amp; Minimum</h2></div>
+
+    <p>When a client releases a milestone payment, it lands in your Provaspace wallet. From there you can request a withdrawal to your saved bank account.</p>
+
+    <ol class="steps">
+      <li>Make sure your bank name, account number, and account name are saved on your profile.</li>
+      <li>Go to your dashboard and tap <strong>Withdraw</strong> on your wallet card.</li>
+      <li>Enter the amount — up to your full wallet balance.</li>
+      <li>Confirm. Your request goes to admin for review and is paid out via bank transfer.</li>
+    </ol>
+
+    <div class="callout amber">
+      <span class="ico">⏳</span>
+      <div><strong>PENDING BALANCE</strong>Once you submit a withdrawal request, that amount moves to <em>Pending</em> and is deducted from your available balance. It stays pending until admin approves and processes the bank transfer.</div>
+    </div>
+
+    <div class="callout blue">
+      <span class="ico">💡</span>
+      <div><strong>MINIMUM AMOUNT</strong>The minimum withdrawal is set by admin and can change over time as the platform grows. Check your dashboard withdrawal modal for the current minimum.</div>
+    </div>
+
+    <div class="shot">
+      <img src="course/withdrawal.png" alt="Withdrawal screen">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">How long does a withdrawal take? <span class="arr">▾</span></button>
+        <div class="faq-a">Withdrawals are processed manually by admin. Timing depends on the admin's processing schedule — if it's taking long, raise a support ticket via Silver Surfer.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I withdraw to a different bank account each time? <span class="arr">▾</span></button>
+        <div class="faq-a">Withdrawals go to whatever bank details are saved on your profile at the time of the request. Update your profile first if you need to change it.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 12 REFERRALS ══════════════════════════════ -->
+  <section class="topic" id="t12">
+    <div class="topic-head"><span class="topic-num">12</span><h2>Referrals</h2><span class="audience-tag">Freelancers</span></div>
+
+    <p>Referrals are how you earn free rent on Provaspace. Share your referral link — when someone signs up through it, verifies their NIN, and completes their first gig, you get free rent days credited to your account.</p>
+
+    <ol class="steps">
+      <li>Go to your dashboard and find the Referral card.</li>
+      <li>Copy your unique referral link and share it — with friends, on social, anywhere.</li>
+      <li>They sign up via your link, verify their NIN, and complete their first gig.</li>
+      <li>You get credited with free rent days. Your rent due date extends automatically.</li>
+    </ol>
+
+    <div class="callout green">
+      <span class="ico">✅</span>
+      <div><strong>ALL THREE CONDITIONS MUST BE MET</strong>Sign-up alone isn't enough. Your referral only counts once the person you referred has verified their NIN <em>and</em> completed their first task on the platform.</div>
+    </div>
+
+    <div class="callout blue">
+      <span class="ico">📅</span>
+      <div><strong>DAYS, NOT NAIRA</strong>Referral rewards are rent days, not cash. Admin sets how many days you earn per successful referral. Check your Referral card for your current total days earned and how many have been credited.</div>
+    </div>
+
+    <div class="shot">
+      <img src="course/referral.png" alt="Referral dashboard card">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">What if I referred someone but haven't been credited? <span class="arr">▾</span></button>
+        <div class="faq-a">Check the three conditions: did they sign up via your link? Have they verified their NIN? Have they completed a gig? All three must be true. If they are and you still haven't been credited, raise a support ticket.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is there a limit on how many people I can refer? <span class="arr">▾</span></button>
+        <div class="faq-a">No limit — refer as many people as you like. Each successful referral adds more days to your rent.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 13 PROFILE & NIN ══════════════════════════════ -->
+  <section class="topic" id="t13">
+    <div class="topic-head"><span class="topic-num">13</span><h2>Your Profile &amp; NIN</h2><span class="audience-tag">Freelancers</span></div>
+
+    <p>Your profile is more than just a display — it unlocks your ability to claim gigs. Certain fields must be filled before you can work on the platform.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>REQUIRED TO CLAIM GIGS</h3>
+        <p>Full name, email, phone, location, skills, bank account number, and a verified NIN. All must be present.</p>
+      </div>
+      <div class="col">
+        <h3>HOW NIN VERIFICATION WORKS</h3>
+        <p>Submit your NIN number on your profile. Admin reviews it and marks it as verified. Until it's approved, you'll see "Unverified" on your profile and can't claim gigs.</p>
+      </div>
+    </div>
+
+    <div class="callout amber">
+      <span class="ico">⚠️</span>
+      <div><strong>CHANGING YOUR NIN</strong>If you update your NIN number on your profile, your verification status resets back to pending and admin has to re-verify it. Don't change it unless you absolutely need to.</div>
+    </div>
+
+    <div class="shot">
+      <img src="./course/profile.png" alt="">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">How long does NIN verification take? <span class="arr">▾</span></button>
+        <div class="faq-a">It's a manual admin review — timing varies. If it's been more than a couple of days, raise a support ticket via Silver Surfer.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I claim gigs while my NIN is pending? <span class="arr">▾</span></button>
+        <div class="faq-a">No. NIN verification is a hard requirement. The claim flow will block you and tell you exactly what's missing.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Why do I need bank details? <span class="arr">▾</span></button>
+        <div class="faq-a">Because that's where your money goes. Without saved bank details, withdrawals can't be processed. Add your bank name, account number, and account name on the Profile page.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 14 MILESTONES & ESCROW ══════════════════════════════ -->
+  <section class="topic" id="t14">
+    <div class="topic-head"><span class="topic-num">14</span><h2>Milestones &amp; Escrow</h2></div>
+
+    <p>When a client posts a gig, they break it into milestones — named stages of the work, each with a percentage of the total payment attached. Milestones are how money moves from client to freelancer.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>HOW MILESTONES WORK</h3>
+        <p>Freelancer marks a milestone as delivered. Client reviews the work and taps Release Payment. The money goes to the freelancer's wallet instantly.</p>
+      </div>
+      <div class="col">
+        <h3>WHAT IS ESCROW</h3>
+        <p>Escrow is money held by the platform on behalf of both parties. The client's deposit goes into escrow when the gig is posted. Milestone payments are released from escrow — not directly from the client's bank each time.</p>
+      </div>
+    </div>
+
+    <div class="callout blue">
+      <span class="ico">💰</span>
+      <div><strong>DEPOSIT → FINAL PAYMENT</strong>Clients pay a deposit when posting a gig. This goes into escrow. As milestones are released and escrow runs low, the client must top up to cover remaining milestones. The contract detail page shows a "Pay" button on the contract card when a top-up is needed.</div>
+    </div>
+
+    <div class="callout green">
+      <span class="ico">✅</span>
+      <div><strong>NO ADMIN APPROVAL NEEDED</strong>Clients release payments directly — no waiting for admin to approve. Once you tap Release Payment, the money hits the freelancer's wallet immediately.</div>
+    </div>
+
+    <div class="shot">
+      <img src="./course/milestone.png" alt="">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">What if the client won't release a milestone? <span class="arr">▾</span></button>
+        <div class="faq-a">Raise a dispute from the Disputes page. Admin reviews it and can release funds from escrow if your work is found to be complete.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Milestone percentages must add up to what? <span class="arr">▾</span></button>
+        <div class="faq-a">Exactly 100%. The form won't let you submit until the total is 100%. The counter turns green when you're there.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can a milestone be released partially? <span class="arr">▾</span></button>
+        <div class="faq-a">No — each milestone releases its full percentage of the total price in one go. Partial releases aren't supported.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 15 CONTRACTS ══════════════════════════════ -->
+  <section class="topic" id="t15">
+    <div class="topic-head"><span class="topic-num">15</span><h2>Contracts &amp; How Jobs Work</h2></div>
+
+    <p>A contract is created the moment a freelancer claims a gig (or a client directly assigns one). It's the living record of the job — milestones, payments, messages, and status all in one place.</p>
+
+    <ol class="steps">
+      <li><strong>Client posts a gig</strong> — sets title, description, price, milestones, deposit, and optional insurance.</li>
+      <li><strong>Freelancer claims it</strong> — from The Space (or is directly assigned). A contract is created immediately.</li>
+      <li><strong>Work happens</strong> — both sides communicate via the in-contract chat. Freelancer marks milestones as delivered.</li>
+      <li><strong>Client releases payment</strong> — taps Release Payment on each delivered milestone. Money goes to freelancer's wallet.</li>
+      <li><strong>Contract completes</strong> — when all milestones are released, the contract is marked complete.</li>
+    </ol>
+
+    <div class="callout amber">
+      <span class="ico">💬</span>
+      <div><strong>CONTRACT CHAT</strong>Each contract has its own private chat between client and freelancer. You can send text and images. On mobile, the input bar always stays at the bottom of the screen — above Silver Surfer — so the send button is never blocked.</div>
+    </div>
+
+    <div class="shot">
+      <img src="./course/contract.png" alt="">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">Can I see all my active contracts in one place? <span class="arr">▾</span></button>
+        <div class="faq-a">Yes — both the freelancer dashboard and the client dashboard have an Active Contracts section. Every contract you're part of shows up there, including ones where a client hired you directly.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What happens when I abandon a contract? <span class="arr">▾</span></button>
+        <div class="faq-a">Your Trust Score drops by 15 points, the client is notified, and the gig goes back to The Space for another freelancer to claim. That next freelancer can see which milestones were already paid — they won't be asked to redo paid work.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 16 DISPUTES ══════════════════════════════ -->
+  <section class="topic" id="t16">
+    <div class="topic-head"><span class="topic-num">16</span><h2>Disputes</h2></div>
+
+    <p>If something goes wrong on a contract — client won't pay, freelancer disappeared, work was unsatisfactory — either side can raise a dispute. Admin reviews it and decides on a resolution.</p>
+
+    <div class="dual">
+      <div class="col">
+        <h3>HOW TO RAISE ONE</h3>
+        <p>Go to the Disputes page from your dashboard sidebar. Click Raise a Dispute, select the contract it's about, describe the problem. It's submitted to admin immediately.</p>
+      </div>
+      <div class="col">
+        <h3>WHAT ADMIN DOES</h3>
+        <p>Admin reviews both sides, looks at contract history, chat logs, and escrow balance, then writes a resolution. Funds held in escrow can be redistributed based on the outcome.</p>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <span class="ico">🔴</span>
+      <div><strong>ABUSE WARNING</strong>Raising false disputes is grounds for suspension or a ban. The dispute system exists to protect both parties honestly — don't weaponise it.</div>
+    </div>
+
+    <div class="shot">
+      <img src="./course/dispute.png" alt="">
+    </div>
+
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">Can I raise a dispute on a completed contract? <span class="arr">▾</span></button>
+        <div class="faq-a">You can raise a dispute on any contract you're part of — active or past. Select it from the dropdown when submitting.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How long does dispute resolution take? <span class="arr">▾</span></button>
+        <div class="faq-a">It's admin-reviewed, so timing varies. If your dispute has been sitting for more than a few days without a response, follow up via Silver Surfer.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 17 DIRECT HIRE ══════════════════════════════ -->
+  <section class="topic" id="t17">
+    <div class="topic-head"><span class="topic-num">17</span><h2>Direct Hire</h2><span class="audience-tag">Clients</span></div>
+
+    <p>Instead of posting a gig to The Space for any freelancer to claim, you can assign it directly to a specific freelancer. This bypasses the open marketplace entirely — the contract is created immediately and shows up in both your dashboards as active.</p>
+
+    <ol class="steps">
+      <li>Go to Post Gig and fill in all the usual details — price, milestones, deposit, etc.</li>
+      <li>At the bottom of the form, enter the freelancer's Provaspace email in the <em>Assign to a specific freelancer</em> field.</li>
+      <li>Wait for the lookup to confirm their account (it searches as you type — green tick means found).</li>
+      <li>Submit. Payment goes through Paystack, the gig is created as claimed, and the contract goes live. The freelancer gets a notification.</li>
+      <li>You can also achieve this easily by going to the space as a client and finding the specific feelancer, click assign gig on his/her card and the email field in post-gig automatically updates</li>
+    </ol>
+
+    <div class="callout green">
+      <span class="ico">✅</span>
+      <div><strong>SHOWS IN ACTIVE CONTRACTS</strong>Direct hire contracts appear in the client's Active Contracts list straight away — no waiting for a freelancer to claim. The freelancer also sees it immediately on their dashboard.</div>
+    </div>
+
+    <div class="callout blue">
+      <span class="ico">💡</span>
+      <div>Leave the email field blank to post to The Space as normal. Direct hire is purely optional.</div>
+    </div>
+
+    <div class="shot">
+      
+      <img src="./course/assign.png" alt="">
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 18 WHAT'S NEXT ══════════════════════════════ -->
+  <section class="topic" id="t18">
+    <div class="topic-head"><span class="topic-num">18</span><h2>A Hope for What's Next</h2></div>
+    <p>Provaspace keeps shipping. The platform you're using today is just the start — more features, better tooling, and a bigger community are on the way. Stay active, build your Trust Score, and keep an eye on the Space.</p>
+    <p style="color:var(--muted); font-size:15px; margin-top:8px;">— Provaspace</p>
+  </section>
+
+</main>
+
+<footer>
+  Provaspace Course — internal reference · <a href="https://addrotech.com.ng" style="text-decoration: none; color: rgb(52, 44, 44);">Provaspace</a>
+</footer>
+
+<script>
+  // Simple FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      // Close all
+      document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+</script>
+
+</body>
+</html>

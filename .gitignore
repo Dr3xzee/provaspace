@@ -1,0 +1,29 @@
+# ── Dependencies ──
+node_modules/
+functions/node_modules/
+
+# ── Firebase secrets — NEVER commit these ──
+.env
+.env.*
+*serviceAccount*.json
+*service-account*.json
+*firebase-adminsdk*.json
+serviceAccountKey.json
+firebase-key.json
+
+# ── Firebase local emulator ──
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+pubsub-debug.log
+
+# ── OS junk ──
+.DS_Store
+Thumbs.db
+
+# ── Editor ──
+.vscode/
+.idea/
+*.suo
+*.user
