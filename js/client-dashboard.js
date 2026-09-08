@@ -276,12 +276,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Free (price=0) or paid and successful — activate pass
                 await updateDoc(doc(db, 'users', currentUser.uid), {
                     'taxPass.tier': tier.name,
-                    'taxPass.gigLimit': tier.gigLimit,
-                    'taxPass.gigsRemaining': tier.gigLimit,
+                    'taxPass.gigLimit': (currentUserData.taxPass?.gigLimit || 0) + tier.gigLimit,
+                    'taxPass.gigsRemaining': (currentUserData.taxPass?.gigsRemaining || 0) + tier.gigLimit,
                 });
-                currentUserData.taxPass = { tier: tier.name, gigLimit: tier.gigLimit, gigsRemaining: tier.gigLimit };
+                const newRemaining = (currentUserData.taxPass?.gigsRemaining || 0) + tier.gigLimit;
+                currentUserData.taxPass = { tier: tier.name, gigLimit: (currentUserData.taxPass?.gigLimit || 0) + tier.gigLimit, gigsRemaining: newRemaining };
                 populateTaxPassCard();
-                showModal('Tax Pass Active ✓', `Your ${tier.name} pass is now active with ${tier.gigLimit} gig post(s).${tier.price === 0 ? ' (Admin-granted free pass)' : ''}`, null);
+                showModal('Tax Pass Active ✓', `${tier.gigLimit} slot(s) added. You now have ${newRemaining} gig post(s) remaining.${tier.price === 0 ? ' (Admin-granted free pass)' : ''}`, null);
             } catch (err) {
                 console.error(err);
                 showModal('Payment Not Completed', err.message || 'Payment was cancelled or failed.', null);

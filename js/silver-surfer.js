@@ -107,6 +107,48 @@ function injectWidget() {
     launcher.innerHTML = `<i class="fa-solid fa-comment-dots"></i><span class="ss-dot" id="ssDot"></span>`;
     document.body.appendChild(launcher);
 
+    // ── DRAGGABLE (vertical only) on contract-detail ──────────────
+    if (window.location.pathname.includes('contract-detail')) {
+        let isDragging = false, startY = 0, startBottom = 0;
+
+        function getBottom() {
+            return parseInt(launcher.style.bottom) || 22;
+        }
+
+        function onDragStart(e) {
+            isDragging = true;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            startBottom = getBottom();
+            launcher.style.transition = 'none';
+            e.preventDefault();
+        }
+
+        function onDragMove(e) {
+            if (!isDragging) return;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const deltaY = startY - clientY; // positive = dragged up
+            const newBottom = Math.min(window.innerHeight - 70, Math.max(16, startBottom + deltaY));
+            launcher.style.bottom = newBottom + 'px';
+            // Keep panel anchored above launcher
+            const panelEl = document.getElementById('ssPanel');
+            if (panelEl) panelEl.style.bottom = (newBottom + 70) + 'px';
+        }
+
+        function onDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            launcher.style.transition = '';
+        }
+
+        launcher.addEventListener('mousedown', onDragStart);
+        launcher.addEventListener('touchstart', onDragStart, { passive: false });
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('touchmove', onDragMove, { passive: false });
+        document.addEventListener('mouseup', onDragEnd);
+        document.addEventListener('touchend', onDragEnd);
+    }
+    // ──────────────────────────────────────────────────────────────
+
     const panel = document.createElement('div');
     panel.id = 'ssPanel';
     panel.innerHTML = `

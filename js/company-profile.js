@@ -1,13 +1,14 @@
 // ============================================
 // PROVASPACE — Client/Company Profile form logic
 // ============================================
-
+// @ts-nocheck
 import { auth, db, onAuthStateChanged, doc, getDoc, updateDoc } from './firebase.js';
 import { uploadToCloudinary } from './cloudinary.js';
 
 let currentUser = null;
 let currentUserData = null;
 let uploadedLogoUrl = null;
+let uploadedCacImageUrl = null;
 let clientType = 'individual';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarInput = document.getElementById('avatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
     const cacStatusBadge = document.getElementById('cacStatusBadge');
+    const cacImageInput = document.getElementById('cacImageInput');
 
     const companyNameGroup = document.getElementById('companyNameGroup');
     const nameLabel = document.getElementById('nameLabel');
@@ -24,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cacStatusBox = document.getElementById('cacStatusBox');
     const cacNumberGroup = document.getElementById('cacNumberGroup');
     const cacHelperText = document.getElementById('cacHelperText');
-
     const typeToggleBtns = document.querySelectorAll('#clientTypeToggle button');
 
     const modalOverlay = document.getElementById('modalOverlay');
@@ -53,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cacSectionLabel.style.display = isCompany ? 'block' : 'none';
         cacStatusBox.style.display = isCompany ? 'block' : 'none';
         cacNumberGroup.style.display = isCompany ? 'flex' : 'none';
+        document.getElementById('cacImageGroup').style.display = isCompany ? 'flex' : 'none';
         cacHelperText.style.display = isCompany ? 'block' : 'none';
         nameLabel.textContent = isCompany ? 'Contact Full Name' : 'Full Name';
         document.getElementById('avatarUploadLabel').innerHTML = isCompany
@@ -66,13 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = 'login.html'; return; }
         currentUser = user;
-
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (!snap.exists()) { window.location.href = 'signup.html'; return; }
         currentUserData = snap.data();
-
         if (currentUserData.role !== 'client') { window.location.href = 'index.html'; return; }
-
         prefillForm();
     });
 
@@ -88,17 +87,29 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('website').value = currentUserData.website || '';
         document.getElementById('cacNumber').value = currentUserData.cacNumber || '';
 
-        const initial = (currentUserData.companyName || currentUserData.fullName || '?').trim().charAt(0).toUpperCase();
+        // Restore CAC image preview
+        if (currentUserData.cacImageUrl) {
+            uploadedCacImageUrl = currentUserData.cacImageUrl;
+            document.getElementById('cacImagePreview').src = currentUserData.cacImageUrl;
+            document.getElementById('cacImagePreviewWrap').style.display = 'block';
+            document.getElementById('cacImageLabel').textContent = 'Change CAC image';
+        }
+
+        // Avatar / logo
         if (currentUserData.avatarUrl) {
             avatarPreview.innerHTML = `<img src="${currentUserData.avatarUrl}" alt="Logo/photo">`;
             uploadedLogoUrl = currentUserData.avatarUrl;
         } else {
-            avatarPreview.textContent = initial;
+            avatarPreview.textContent = (currentUserData.companyName || currentUserData.fullName || '?').trim().charAt(0).toUpperCase();
         }
 
+        // CAC status badge
         if (currentUserData.cacVerified) {
             cacStatusBadge.textContent = 'Verified';
             cacStatusBadge.className = 'verify-status-badge verify-approved';
+        } else if (currentUserData.cacRejected) {
+            cacStatusBadge.textContent = `Rejected — ${currentUserData.cacRejectionReason || 'see notification'}`;
+            cacStatusBadge.className = 'verify-status-badge verify-none';
         } else if (currentUserData.cacNumber) {
             cacStatusBadge.textContent = 'Pending admin review';
             cacStatusBadge.className = 'verify-status-badge verify-pending';
@@ -112,17 +123,31 @@ document.addEventListener('DOMContentLoaded', () => {
     avatarInput.addEventListener('change', async () => {
         const file = avatarInput.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => { avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`; };
         reader.readAsDataURL(file);
-
         try {
-            // Uploads go through js/cloudinary.js — set your cloud name + unsigned preset there
             uploadedLogoUrl = await uploadToCloudinary(file);
         } catch (err) {
             console.error(err);
-            showModal('Upload Failed', 'Cloudinary is not configured yet — check js/cloudinary.js for your cloud name and upload preset. Your image preview shows locally but was not saved.', null);
+            showModal('Upload Failed', 'Cloudinary is not configured. Check js/cloudinary.js. Your preview shows locally but was not saved.', null);
+        }
+    });
+
+    // ---------- CAC IMAGE UPLOAD ----------
+    cacImageInput?.addEventListener('change', async () => {
+        const file = cacImageInput.files[0];
+        if (!file) return;
+        document.getElementById('cacImageLabel').textContent = 'Uploading…';
+        try {
+            const url = await uploadToCloudinary(file);
+            uploadedCacImageUrl = url;
+            document.getElementById('cacImagePreview').src = url;
+            document.getElementById('cacImagePreviewWrap').style.display = 'block';
+            document.getElementById('cacImageLabel').textContent = 'Change CAC image';
+        } catch (e) {
+            document.getElementById('cacImageLabel').textContent = 'Upload failed — try again';
+            console.error(e);
         }
     });
 
@@ -141,21 +166,22 @@ document.addEventListener('DOMContentLoaded', () => {
             industry: clientType === 'company' ? document.getElementById('industry').value.trim() : null,
             website: clientType === 'company' ? document.getElementById('website').value.trim() : null,
             cacNumber: clientType === 'company' ? cacNumber : null,
+            cacImageUrl: clientType === 'company' ? (uploadedCacImageUrl || currentUserData.cacImageUrl || null) : null,
             avatarUrl: uploadedLogoUrl || currentUserData.avatarUrl || null,
         };
 
-        // Individuals don't need CAC verification — auto-mark not-applicable so they aren't
-        // stuck forever in the admin's pending-verification queue
         if (clientType === 'individual') {
-            updates.cacVerified = true; // Individuals don't need CAC review, so mark as cleared automatically
+            updates.cacVerified = true;
         } else if (submittedNewCac) {
             updates.cacVerified = false;
+            updates.cacRejected = false;
+            updates.cacRejectionReason = null;
         }
 
         try {
             await updateDoc(doc(db, 'users', currentUser.uid), updates);
             showModal('Profile Saved', submittedNewCac
-                ? 'Your profile has been updated. Your CAC number has been sent to the admin queue for verification.'
+                ? 'Your profile has been updated. Your CAC has been sent to the admin queue for verification.'
                 : 'Your profile has been updated.', () => window.location.href = 'client-dashboard.html');
         } catch (err) {
             console.error(err);

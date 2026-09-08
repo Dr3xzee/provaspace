@@ -92,8 +92,8 @@ if (signupForm) {
                 rentCredit: 0,
                 totalSpent: selectedRole === 'client' ? 0 : null,
                 rentStatus: selectedRole === 'freelancer' ? {
-                    plan: 'monthly', amountOwed: 0,
-                    dueDate: freeMonthDueDate, freeMonthUsed: true,
+                    plan: null, amountOwed: 0,
+                    dueDate: null, freeMonthUsed: false,
                 } : null,
                 taxPass: selectedRole === 'client' ? {
                     tier: null, gigLimit: 0, gigsRemaining: 0,
@@ -136,7 +136,7 @@ if (signupForm) {
                     fullName: result.user.displayName || '',
                     email: result.user.email, phone: '',
                     trustScore: 100, walletBalance: 0, rentCredit: 0,
-                    rentStatus: { plan: 'monthly', amountOwed: 0, dueDate: freeMonthDueDate, freeMonthUsed: true },
+                    rentStatus: { plan: null, amountOwed: 0, dueDate: null, freeMonthUsed: false },
                     taxPass: null, profileComplete: false,
                     ninVerified: false, cacVerified: false,
                     referralCount: 0, referralEarnings: 0,

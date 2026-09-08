@@ -147,22 +147,36 @@ document.addEventListener('DOMContentLoaded', () => {
         taxTiersBox.appendChild(row);
     }
 
+    function addRentTierRow(tier = { name: '', days: 30, price: 0 }) {
+        const rentTiersBox = document.getElementById('rentTiersBox');
+        const row = document.createElement('div');
+        row.className = 'tier-row';
+        row.innerHTML = `
+            <input type="text" placeholder="Plan name (e.g. Weekly)" class="rent-tier-name" value="${escapeHtml(tier.name)}">
+            <input type="number" placeholder="Days" class="rent-tier-days" value="${tier.days}" style="max-width:90px;" title="Duration in days">
+            <input type="number" placeholder="Price (₦)" class="rent-tier-price" value="${tier.price}" style="max-width:130px;">
+            <button type="button" class="remove-tier-btn"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        row.querySelector('.remove-tier-btn').addEventListener('click', () => row.remove());
+        rentTiersBox.appendChild(row);
+    }
+
     document.getElementById('addTierBtn').addEventListener('click', () => addTierRow());
+    document.getElementById('addRentTierBtn').addEventListener('click', () => addRentTierRow());
 
     async function loadPriceSettings() {
         const snap = await getDoc(doc(db, 'settings', 'prices'));
         const p = snap.exists() ? snap.data() : {
-            rentWeekly: 2000, rentMonthly: 7000, rentYearly: 70000,
+            rentTiers: [{ name: 'Weekly', days: 7, price: 2000 }, { name: 'Monthly', days: 30, price: 7000 }, { name: 'Yearly', days: 365, price: 70000 }],
             gracePeriodDays: 7, overdueFeeFlat: 500, insuranceFeePercent: 3,
             taxPassTiers: [{ name: 'Slivering', gigLimit: 10, price: 5000 }, { name: 'Golden Boy', gigLimit: 20, price: 9000 }],
         };
-        document.getElementById('rentWeekly').value = p.rentWeekly ?? '';
-        document.getElementById('rentMonthly').value = p.rentMonthly ?? '';
-        document.getElementById('rentYearly').value = p.rentYearly ?? '';
         document.getElementById('gracePeriodDays').value = p.gracePeriodDays ?? '';
         document.getElementById('overdueFeeFlat').value = p.overdueFeeFlat ?? '';
         document.getElementById('insuranceFeePercent').value = p.insuranceFeePercent ?? '';
         document.getElementById('assuranceFeeFlat').value = p.assuranceFeeFlat ?? '';
+        document.getElementById('rentTiersBox').innerHTML = '';
+        (p.rentTiers || []).forEach(t => addRentTierRow(t));
         taxTiersBox.innerHTML = '';
         (p.taxPassTiers || []).forEach(t => addTierRow(t));
     }
@@ -174,10 +188,14 @@ document.addEventListener('DOMContentLoaded', () => {
             price: parseFloat(row.querySelector('.tier-price').value) || 0,
         }));
 
+        const rentTiers = [...document.querySelectorAll('#rentTiersBox .tier-row')].map(row => ({
+            name: row.querySelector('.rent-tier-name').value.trim(),
+            days: parseInt(row.querySelector('.rent-tier-days').value, 10) || 30,
+            price: parseFloat(row.querySelector('.rent-tier-price').value) || 0,
+        }));
+
         const priceData = {
-            rentWeekly: parseFloat(document.getElementById('rentWeekly').value) || 0,
-            rentMonthly: parseFloat(document.getElementById('rentMonthly').value) || 0,
-            rentYearly: parseFloat(document.getElementById('rentYearly').value) || 0,
+            rentTiers,
             gracePeriodDays: parseInt(document.getElementById('gracePeriodDays').value, 10) || 0,
             overdueFeeFlat: parseFloat(document.getElementById('overdueFeeFlat').value) || 0,
             insuranceFeePercent: parseFloat(document.getElementById('insuranceFeePercent').value) || 0,
@@ -191,12 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showModal('Prices Saved', 'All pricing has been updated across the platform.', null);
         } catch (err) {
             console.error(err);
-            showModal('Error', 'Could not save prices. Check that your Firestore rules allow admin writes to settings/prices.', null);
+            showModal('Error', 'Could not save prices.', null);
         }
     });
-
     // ---------- VERIFICATIONS ----------
-   // ---------- VERIFICATIONS ----------
 async function loadVerifications() {
     const freelancerBody = document.getElementById('freelancerVerifyBody');
     const clientBody = document.getElementById('clientVerifyBody');
@@ -231,15 +247,31 @@ async function loadVerifications() {
         freelancerBody.innerHTML = flSnap.empty ? '<tr><td colspan="5">No pending NIN verifications.</td></tr>' : '';
         flSnap.forEach(d => {
             const u = d.data();
+            const ninThumb = u.ninImageUrl
+                ? `<img src="${u.ninImageUrl}" alt="NIN" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);cursor:pointer;" data-fullimg="${u.ninImageUrl}">`
+                : `<span style="color:var(--text-secondary);font-size:0.78rem;">No image</span>`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${escapeHtml(u.fullName)}</td>
                 <td>${escapeHtml(u.email)}</td>
                 <td>${escapeHtml(u.phone)}</td>
+                <td>${ninThumb}</td>
                 <td><button class="table-action-btn secondary" data-more-freelancer="${d.id}">More</button></td>
-                <td><button class="table-action-btn" data-verify-freelancer="${d.id}">Verify</button></td>
+                <td>
+                    <button class="table-action-btn" data-verify-freelancer="${d.id}">Verify</button>
+                    <button class="table-action-btn danger" data-reject-freelancer="${d.id}" data-name="${escapeHtml(u.fullName || '')}">Reject</button>
+                </td>
             `;
             freelancerBody.appendChild(tr);
+        });
+
+        // Full image lightbox on thumbnail click
+        freelancerBody.querySelectorAll('[data-fullimg]').forEach(img => {
+            img.addEventListener('click', () => {
+                const box = document.createElement('div');
+                box.innerHTML = `<img src="${img.dataset.fullimg}" alt="NIN document" style="width:100%;border-radius:10px;object-fit:contain;max-height:70vh;">`;
+                showModal('NIN Document', box, null);
+            });
         });
 
         freelancerBody.querySelectorAll('[data-more-freelancer]').forEach(btn => {
@@ -252,7 +284,42 @@ async function loadVerifications() {
         freelancerBody.querySelectorAll('[data-verify-freelancer]').forEach(btn => {
             btn.addEventListener('click', async () => {
                 await updateDoc(doc(db, 'users', btn.dataset.verifyFreelancer), { ninVerified: true });
+                await notifyUser(btn.dataset.verifyFreelancer, {
+                    title: '✅ NIN Verified!',
+                    message: 'Your NIN has been verified by admin. You can now claim gigs on The Space.',
+                    type: 'nin_verified', link: 'profile.html',
+                }).catch(() => {});
                 showModal('Verified', 'Freelancer NIN marked as verified.', () => loadVerifications());
+            });
+        });
+        freelancerBody.querySelectorAll('[data-reject-freelancer]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const uid = btn.dataset.rejectFreelancer;
+                const name = btn.dataset.name || 'Freelancer';
+                const box = document.createElement('div');
+                box.innerHTML = `
+                    <p style="margin-bottom:10px;">Set a rejection reason for <strong>${escapeHtml(name)}</strong>. This will be sent to them as a notification.</p>
+                    <textarea id="rejectNinReason" rows="3" placeholder="e.g. NIN image is blurry, please re-upload a clearer photo."
+                        style="width:100%;padding:10px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.9rem;resize:vertical;background:var(--bg-main);color:var(--text-primary);"></textarea>
+                `;
+                showModal('Reject NIN — Add Reason', box, null);
+                modalActionBtn.textContent = 'Reject & Notify';
+                modalActionBtn.onclick = async () => {
+                    const reason = document.getElementById('rejectNinReason').value.trim();
+                    if (!reason) { alert('Please enter a reason.'); return; }
+                    modalOverlay.classList.remove('active');
+                    try {
+                        await updateDoc(doc(db, 'users', uid), { ninVerified: false, ninRejected: true, ninRejectionReason: reason });
+                        await notifyUser(uid, {
+                            title: '❌ NIN Verification Rejected',
+                            message: `Your NIN verification was rejected. Reason: ${reason}`,
+                            type: 'nin_rejected', link: 'profile.html',
+                        });
+                        showModal('Done', 'NIN rejected and user notified.', () => loadVerifications());
+                    } catch (e) {
+                        showModal('Error', 'Could not reject NIN.', null);
+                    }
+                };
             });
         });
     } catch (err) {
@@ -265,15 +332,31 @@ async function loadVerifications() {
         clientBody.innerHTML = clSnap.empty ? '<tr><td colspan="4">No pending CAC verifications.</td></tr>' : '';
         clSnap.forEach(d => {
             const u = d.data();
+            const cacThumb = u.cacImageUrl
+                ? `<img src="${u.cacImageUrl}" alt="CAC" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);cursor:pointer;" data-fullimg="${u.cacImageUrl}">`
+                : `<span style="color:var(--text-secondary);font-size:0.78rem;">No image</span>`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${escapeHtml(u.companyName || u.fullName)}</td>
                 <td>${escapeHtml(u.email)}</td>
                 <td>${escapeHtml(u.phone)}</td>
+                <td>${cacThumb}</td>
                 <td><button class="table-action-btn secondary" data-more-client="${d.id}">More</button></td>
-                <td><button class="table-action-btn" data-verify-client="${d.id}">Verify</button></td>
+                <td>
+                    <button class="table-action-btn" data-verify-client="${d.id}">Verify</button>
+                    <button class="table-action-btn danger" data-reject-client="${d.id}" data-name="${escapeHtml(u.companyName || u.fullName || '')}">Reject</button>
+                </td>
             `;
             clientBody.appendChild(tr);
+        });
+
+        // Full image lightbox on thumbnail click
+        clientBody.querySelectorAll('[data-fullimg]').forEach(img => {
+            img.addEventListener('click', () => {
+                const box = document.createElement('div');
+                box.innerHTML = `<img src="${img.dataset.fullimg}" alt="CAC document" style="width:100%;border-radius:10px;object-fit:contain;max-height:70vh;">`;
+                showModal('CAC Document', box, null);
+            });
         });
 
         clientBody.querySelectorAll('[data-more-client]').forEach(btn => {
@@ -286,7 +369,42 @@ async function loadVerifications() {
         clientBody.querySelectorAll('[data-verify-client]').forEach(btn => {
             btn.addEventListener('click', async () => {
                 await updateDoc(doc(db, 'users', btn.dataset.verifyClient), { cacVerified: true });
+                await notifyUser(btn.dataset.verifyClient, {
+                    title: '✅ CAC Verified!',
+                    message: 'Your company CAC has been verified by admin. You can now post gigs.',
+                    type: 'cac_verified', link: 'company-profile.html',
+                }).catch(() => {});
                 showModal('Verified', 'Client CAC marked as verified.', () => loadVerifications());
+            });
+        });
+        clientBody.querySelectorAll('[data-reject-client]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const uid = btn.dataset.rejectClient;
+                const name = btn.dataset.name || 'Company';
+                const box = document.createElement('div');
+                box.innerHTML = `
+                    <p style="margin-bottom:10px;">Set a rejection reason for <strong>${escapeHtml(name)}</strong>. This will be sent to them as a notification.</p>
+                    <textarea id="rejectCacReason" rows="3" placeholder="e.g. CAC document is expired, please upload a current certificate."
+                        style="width:100%;padding:10px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.9rem;resize:vertical;background:var(--bg-main);color:var(--text-primary);"></textarea>
+                `;
+                showModal('Reject CAC — Add Reason', box, null);
+                modalActionBtn.textContent = 'Reject & Notify';
+                modalActionBtn.onclick = async () => {
+                    const reason = document.getElementById('rejectCacReason').value.trim();
+                    if (!reason) { alert('Please enter a reason.'); return; }
+                    modalOverlay.classList.remove('active');
+                    try {
+                        await updateDoc(doc(db, 'users', uid), { cacVerified: false, cacRejected: true, cacRejectionReason: reason });
+                        await notifyUser(uid, {
+                            title: '❌ CAC Verification Rejected',
+                            message: `Your CAC verification was rejected. Reason: ${reason}`,
+                            type: 'cac_rejected', link: 'company-profile.html',
+                        });
+                        showModal('Done', 'CAC rejected and company notified.', () => loadVerifications());
+                    } catch (e) {
+                        showModal('Error', 'Could not reject CAC.', null);
+                    }
+                };
             });
         });
     } catch (err) {

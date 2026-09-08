@@ -107,24 +107,14 @@ document.addEventListener('click', (e) => {
         populateProfileCard();
         populateReferralCard();
 
-        // ── NEW USER RENT ENFORCEMENT ──────────────────────────────
-        // New freelancers must pay rent before accessing the space.
-        // Exception: if they have a rentCredit from a referral (days gifted).
+        // ── RENT INFO (non-blocking) ───────────────────────────────
         const rent = currentUserData.rentStatus || {};
-        const rentCredit = currentUserData.rentCredit || 0; // days of free rent from referrals
-        const hasActivePlan = !!rent.plan;
-        const hasFreeAccess = rentCredit > 0 || !!currentUserData.referredBy;
-
-        if (!hasActivePlan && !hasFreeAccess) {
-            // Block with a must-pay rent banner
-            showNewUserRentGate();
-        } else if (!hasActivePlan && hasFreeAccess && rentCredit > 0) {
-            // Auto-apply referral rent credit (convert to plan-like status)
-            // Just show info; rent credit is used when they pay
+        const rentCredit = currentUserData.rentCredit || 0;
+        const planActive = rent.plan && rent.dueDate &&
+            (rent.dueDate?.toDate ? rent.dueDate.toDate() : new Date(rent.dueDate)) > new Date();
+        if (!planActive && rentCredit > 0) {
             const rentNote = document.getElementById('rentSummary');
-            if (rentNote) {
-                rentNote.textContent = `You have ${rentCredit} day(s) of free rent credit from referrals. Pay rent when ready — your credit will apply.`;
-            }
+            if (rentNote) rentNote.textContent = `You have ${rentCredit} day(s) of free rent credit from referrals. Pay rent when ready.`;
         }
         // ──────────────────────────────────────────────────────────
 
@@ -168,7 +158,6 @@ document.addEventListener('click', (e) => {
     }
 
     function showNewUserRentGate() {
-        // Create a blocking overlay telling new user they must pay rent
         const gate = document.createElement('div');
         gate.id = 'rentGate';
         gate.style.cssText = `
@@ -181,7 +170,7 @@ document.addEventListener('click', (e) => {
                 <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:10px;">Welcome to Provaspace!</h2>
                 <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.6;">
                     To operate in the space and access gigs, all freelancers must pay rent.<br><br>
-                    <strong>Referred a friend?</strong> You get free rent days when they complete their first gig — check your referral card once they do.
+                    <strong>Referred a friend?</strong> You get free rent days when they complete their first gig.
                 </p>
                 <div id="rentGatePlanPicker" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;"></div>
                 <button id="rentGatePayBtn" style="width:100%;background:var(--accent-gradient);color:white;border:none;border-radius:14px;padding:14px;font-weight:700;font-size:0.95rem;cursor:pointer;">
@@ -194,45 +183,63 @@ document.addEventListener('click', (e) => {
         `;
         document.body.appendChild(gate);
 
-        // Populate plan picker
-        const picker = document.getElementById('rentGatePlanPicker');
-        const plans = [
-            { key: 'weekly', label: 'Weekly', price: priceSettings.rentWeekly },
-            { key: 'monthly', label: 'Monthly', price: priceSettings.rentMonthly },
-            { key: 'yearly', label: 'Yearly', price: priceSettings.rentYearly },
+        const plans = priceSettings.rentTiers || [
+            { name: 'Weekly', days: 7, price: 2000 },
+            { name: 'Monthly', days: 30, price: 7000 },
+            { name: 'Yearly', days: 365, price: 70000 },
         ];
-        let selectedPlan = 'weekly';
+
+        const picker = document.getElementById('rentGatePlanPicker');
+        let selectedIdx = 0;
+
         plans.forEach((p, i) => {
-            const btn = document.createElement('label');
-            btn.style.cssText = 'display:flex;align-items:center;gap:12px;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:12px;padding:12px 16px;cursor:pointer;transition:border-color 0.2s;';
-            btn.innerHTML = `
-                <input type="radio" name="rentGatePlan" value="${p.key}" ${i===0?'checked':''} style="accent-color:var(--accent-blue);">
-                <span><strong>${p.label}</strong> — ${formatNaira(p.price)}</span>
+            const priceLabel = p.price === 0
+                ? '<span style="color:var(--accent-green);font-weight:800;">Free</span>'
+                : formatNaira(p.price);
+            const lbl = document.createElement('label');
+            lbl.style.cssText = 'display:flex;align-items:center;gap:12px;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:12px;padding:12px 16px;cursor:pointer;';
+            lbl.innerHTML = `
+                <input type="radio" name="rentGatePlan" value="${i}" ${i===0?'checked':''} style="accent-color:var(--accent-blue);">
+                <span><strong>${escapeHtml(p.name)}</strong> · ${p.days} day(s) · ${priceLabel}</span>
             `;
-            btn.querySelector('input').addEventListener('change', () => { selectedPlan = p.key; });
-            picker.appendChild(btn);
+            lbl.querySelector('input').addEventListener('change', () => { selectedIdx = i; updateGateBtn(); });
+            picker.appendChild(lbl);
         });
 
+        function updateGateBtn() {
+            const p = plans[selectedIdx];
+            document.getElementById('rentGatePayBtn').textContent =
+                p.price === 0 ? '✓ Activate Free Plan & Enter' : 'Pay Rent & Enter the Space';
+        }
+        updateGateBtn();
+
         document.getElementById('rentGatePayBtn').addEventListener('click', async () => {
-            const priceKey = { weekly: 'rentWeekly', monthly: 'rentMonthly', yearly: 'rentYearly' }[selectedPlan];
-            const amount = priceSettings[priceKey];
-            const days = { weekly: 7, monthly: 30, yearly: 365 }[selectedPlan];
-            const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + days);
+            const plan = plans[selectedIdx];
+            // Stack on top of existing due date if still valid
+            const existingDue = currentUserData.rentStatus?.dueDate?.toDate
+                ? currentUserData.rentStatus.dueDate.toDate()
+                : (currentUserData.rentStatus?.dueDate ? new Date(currentUserData.rentStatus.dueDate) : null);
+            const base = existingDue && existingDue > new Date() ? existingDue : new Date();
+            const dueDate = new Date(base);
+            dueDate.setDate(dueDate.getDate() + plan.days);
+
             try {
-                await payWithPaystack({
-                    email: currentUserData.email,
-                    amountNaira: amount,
-                    metadata: { purpose: 'rent', plan: selectedPlan, uid: currentUser.uid },
-                });
+                if (plan.price > 0) {
+                    await payWithPaystack({
+                        email: currentUserData.email,
+                        amountNaira: plan.price,
+                        metadata: { purpose: 'rent', plan: plan.name, uid: currentUser.uid },
+                    });
+                }
                 await updateDoc(doc(db, 'users', currentUser.uid), {
-                    'rentStatus.plan': selectedPlan,
+                    'rentStatus.plan': plan.name,
                     'rentStatus.amountOwed': 0,
                     'rentStatus.dueDate': dueDate,
                 });
-                currentUserData.rentStatus = { plan: selectedPlan, amountOwed: 0, dueDate };
+                currentUserData.rentStatus = { plan: plan.name, amountOwed: 0, dueDate };
                 gate.remove();
                 populateRentCard();
-                showModal('🎉 Welcome to the Space!', `Your ${selectedPlan} rent is paid. Go claim some gigs!`, null);
+                showModal('🎉 Welcome to the Space!', `${plan.name} rent ${plan.price === 0 ? 'activated free' : 'paid'}. Go claim some gigs!`, null);
             } catch (err) {
                 console.error(err);
                 showModal('Payment Failed', err.message || 'Could not process rent payment. Try again.', null);
@@ -409,46 +416,52 @@ document.addEventListener('click', (e) => {
 
     // ---------- RENT PAYMENT ----------
     document.getElementById('payRentBtn').addEventListener('click', async () => {
+        const plans = priceSettings.rentTiers || [
+            { name: 'Weekly', days: 7, price: 2000 },
+            { name: 'Monthly', days: 30, price: 7000 },
+            { name: 'Yearly', days: 365, price: 70000 },
+        ];
         const box = document.createElement('div');
-        box.innerHTML = `
-            <p style="margin-bottom:10px;">Choose a rent plan (prices set by admin):</p>
-            <div class="role-toggle" id="rentPlanToggle" style="margin-bottom:10px;">
-                <button type="button" data-plan="weekly" class="active">Weekly<br><small>${formatNaira(priceSettings.rentWeekly)}</small></button>
-                <button type="button" data-plan="monthly">Monthly<br><small>${formatNaira(priceSettings.rentMonthly)}</small></button>
-                <button type="button" data-plan="yearly">Yearly<br><small>${formatNaira(priceSettings.rentYearly)}</small></button>
-            </div>
-        `;
-        let selectedPlan = 'weekly';
+        box.innerHTML = `<p style="margin-bottom:10px;">Choose a rent plan:</p>` +
+            plans.map((p, i) => {
+                const priceLabel = p.price === 0
+                    ? '<span style="color:var(--accent-green);font-weight:800;">Free</span>'
+                    : formatNaira(p.price);
+                return `
+                <label style="display:flex;align-items:center;gap:10px;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;">
+                    <input type="radio" name="rentPlan" value="${i}" ${i===0?'checked':''} style="accent-color:var(--accent-blue);">
+                    <span><strong>${escapeHtml(p.name)}</strong> · ${p.days} day(s) · ${priceLabel}</span>
+                </label>`;
+            }).join('');
         showModal('Pay Rent', box, null);
-        box.querySelectorAll('[data-plan]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                box.querySelectorAll('[data-plan]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedPlan = btn.dataset.plan;
-            });
-        });
-        modalActionBtn.textContent = 'Pay Now';
+        modalActionBtn.textContent = 'Continue';
         modalActionBtn.onclick = async () => {
+            const idx = parseInt(box.querySelector('input[name="rentPlan"]:checked').value, 10);
+            const plan = plans[idx];
             modalOverlay.classList.remove('active');
-            const priceKey = { weekly: 'rentWeekly', monthly: 'rentMonthly', yearly: 'rentYearly' }[selectedPlan];
-            const amount = priceSettings[priceKey];
+            // Stack on existing due date if still valid
+            const existingDue = currentUserData.rentStatus?.dueDate?.toDate
+                ? currentUserData.rentStatus.dueDate.toDate()
+                : (currentUserData.rentStatus?.dueDate ? new Date(currentUserData.rentStatus.dueDate) : null);
+            const base = existingDue && existingDue > new Date() ? existingDue : new Date();
+            const dueDate = new Date(base);
+            dueDate.setDate(dueDate.getDate() + plan.days);
             try {
-                await payWithPaystack({
-                    email: currentUserData.email,
-                    amountNaira: amount,
-                    metadata: { purpose: 'rent', plan: selectedPlan, uid: currentUser.uid },
-                });
-                const days = { weekly: 7, monthly: 30, yearly: 365 }[selectedPlan];
-                const dueDate = new Date();
-                dueDate.setDate(dueDate.getDate() + days);
+                if (plan.price > 0) {
+                    await payWithPaystack({
+                        email: currentUserData.email,
+                        amountNaira: plan.price,
+                        metadata: { purpose: 'rent', plan: plan.name, uid: currentUser.uid },
+                    });
+                }
                 await updateDoc(doc(db, 'users', currentUser.uid), {
-                    'rentStatus.plan': selectedPlan,
+                    'rentStatus.plan': plan.name,
                     'rentStatus.amountOwed': 0,
                     'rentStatus.dueDate': dueDate,
                 });
-                currentUserData.rentStatus = { plan: selectedPlan, amountOwed: 0, dueDate };
+                currentUserData.rentStatus = { plan: plan.name, amountOwed: 0, dueDate };
                 populateRentCard();
-                showModal('Rent Paid', `Your ${selectedPlan} rent has been recorded.`, null);
+                showModal('Rent Updated ✓', `${plan.name} plan ${plan.price === 0 ? 'activated free' : 'paid'}. Due date extended to ${dueDate.toLocaleDateString()}.`, null);
             } catch (err) {
                 console.error(err);
                 showModal('Payment Not Completed', err.message || 'Payment was cancelled or failed.', null);

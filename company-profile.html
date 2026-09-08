@@ -824,6 +824,18 @@
                         <input type="text" id="cacNumber" placeholder="RC or BN number">
                     </div>
 
+                    <div class="form-group" id="cacImageGroup" style="display:none;">
+                        <label>CAC Certificate / Document <span style="font-weight:400;color:var(--text-secondary);font-size:0.8rem;">(photo or scan)</span></label>
+                        <div id="cacImagePreviewWrap" style="display:none;margin-bottom:10px;">
+                            <img id="cacImagePreview" src="" alt="CAC document" style="max-width:100%;max-height:220px;border-radius:10px;border:1.5px solid var(--border-color);object-fit:contain;">
+                        </div>
+                        <label for="cacImageInput" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:1.5px dashed var(--border-color);border-radius:12px;cursor:pointer;font-size:0.88rem;color:var(--text-secondary);">
+                            <i class="fa-solid fa-camera" style="color:var(--accent-blue);"></i>
+                            <span id="cacImageLabel">Upload CAC certificate or document image</span>
+                        </label>
+                        <input type="file" id="cacImageInput" accept="image/*" style="display:none;">
+                    </div>
+
                     <p class="helper-text" id="cacHelperText" style="display:none;">
                         <i class="fa-solid fa-clock"></i>
                         Verification takes 24–48 hours.

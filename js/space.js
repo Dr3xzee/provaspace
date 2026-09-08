@@ -205,8 +205,122 @@ document.addEventListener('DOMContentLoaded', () => {
         modalActionBtn.onclick = () => claimGig(gig.id);
     }
 
+function showRentGate() {
+    if (document.getElementById('ssRentGate')) return; // don't double-render
+
+    const gate = document.createElement('div');
+    gate.id = 'ssRentGate';
+    gate.style.cssText = `
+        position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(8px);
+        z-index:50000;display:flex;align-items:center;justify-content:center;padding:20px;
+    `;
+    gate.innerHTML = `
+        <div style="background:var(--bg-card);border-radius:24px;padding:32px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 48px rgba(0,0,0,0.3);">
+            <div style="font-size:3rem;margin-bottom:16px;">🏠</div>
+            <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:10px;">Pay Rent to Claim</h2>
+            <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.6;">
+                You're browsing the Space for free — but to claim a gig you need an active rent plan.
+            </p>
+            <div id="spaceRentPicker" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                <p style="color:var(--text-secondary);font-size:0.85rem;">Loading plans…</p>
+            </div>
+            <button id="spaceRentPayBtn" style="width:100%;background:var(--accent-gradient);color:white;border:none;border-radius:14px;padding:14px;font-weight:700;font-size:0.95rem;cursor:pointer;display:none;">
+                Pay &amp; Claim
+            </button>
+            <button id="spaceRentClose" style="width:100%;background:transparent;border:none;color:var(--text-secondary);margin-top:12px;font-size:0.85rem;cursor:pointer;">
+                Maybe later — keep browsing
+            </button>
+        </div>
+    `;
+    document.body.appendChild(gate);
+    document.getElementById('spaceRentClose').addEventListener('click', () => gate.remove());
+
+    // Load plans from settings
+    getDoc(doc(db, 'settings', 'prices')).then(snap => {
+        const plans = snap.exists() && snap.data().rentTiers?.length
+            ? snap.data().rentTiers
+            : [{ name: 'Weekly', days: 7, price: 2000 }, { name: 'Monthly', days: 30, price: 7000 }, { name: 'Yearly', days: 365, price: 70000 }];
+
+        const picker = document.getElementById('spaceRentPicker');
+        picker.innerHTML = '';
+        let selectedIdx = 0;
+
+        plans.forEach((p, i) => {
+            const priceLabel = p.price === 0
+                ? '<span style="color:#10b981;font-weight:800;">Free</span>'
+                : `₦${p.price.toLocaleString()}`;
+            const lbl = document.createElement('label');
+            lbl.style.cssText = 'display:flex;align-items:center;gap:12px;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:12px;padding:12px 16px;cursor:pointer;text-align:left;';
+            lbl.innerHTML = `
+                <input type="radio" name="spaceRentPlan" value="${i}" ${i===0?'checked':''} style="accent-color:#4169E1;flex-shrink:0;">
+                <span><strong>${p.name}</strong> · ${p.days} day(s) · ${priceLabel}</span>
+            `;
+            lbl.querySelector('input').addEventListener('change', () => { selectedIdx = i; updateBtn(); });
+            picker.appendChild(lbl);
+        });
+
+        const payBtn = document.getElementById('spaceRentPayBtn');
+        payBtn.style.display = 'block';
+
+        function updateBtn() {
+            payBtn.textContent = plans[selectedIdx].price === 0 ? '✓ Activate Free Plan & Claim' : 'Pay Rent & Claim';
+        }
+        updateBtn();
+
+        payBtn.addEventListener('click', async () => {
+            const plan = plans[selectedIdx];
+            const existingDue = currentUserData.rentStatus?.dueDate?.toDate
+                ? currentUserData.rentStatus.dueDate.toDate()
+                : (currentUserData.rentStatus?.dueDate ? new Date(currentUserData.rentStatus.dueDate) : null);
+            const base = existingDue && existingDue > new Date() ? existingDue : new Date();
+            const dueDate = new Date(base);
+            dueDate.setDate(dueDate.getDate() + plan.days);
+
+            try {
+                if (plan.price > 0) {
+                    await payWithPaystackSpace({
+                        email: currentUserData.email,
+                        amountNaira: plan.price,
+                        metadata: { purpose: 'rent', plan: plan.name, uid: currentUser.uid },
+                    });
+                }
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    'rentStatus.plan': plan.name,
+                    'rentStatus.amountOwed': 0,
+                    'rentStatus.dueDate': dueDate,
+                });
+                currentUserData.rentStatus = { plan: plan.name, amountOwed: 0, dueDate };
+                gate.remove();
+                // Small toast then re-trigger claim
+                const t = document.createElement('div');
+                t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:10px 22px;border-radius:999px;font-weight:700;font-size:0.85rem;z-index:99999;';
+                t.textContent = `${plan.name} rent active ✓ — tap Claim again to proceed`;
+                document.body.appendChild(t);
+                setTimeout(() => t.remove(), 3500);
+            } catch (err) {
+                console.error(err);
+                alert(err.message || 'Payment failed. Try again.');
+            }
+        });
+    }).catch(() => {
+        document.getElementById('spaceRentPicker').innerHTML = '<p style="color:#ef4444;font-size:0.85rem;">Could not load plans. Check your connection.</p>';
+    });
+}
+
 async function claimGig(gigId) {
     modalOverlay.classList.remove('active');
+
+    // ── RENT CHECK ────────────────────────────────────────────────
+    const rent = currentUserData.rentStatus || {};
+    const rentCredit = currentUserData.rentCredit || 0;
+    const planActive = rent.plan && rent.dueDate &&
+        (rent.dueDate?.toDate ? rent.dueDate.toDate() : new Date(rent.dueDate)) > new Date();
+
+    if (!planActive && rentCredit <= 0) {
+        showRentGate();
+        return;
+    }
+    // ──────────────────────────────────────────────────────────────
 
     const missing = [];
     if (!currentUserData.ninNumber || !currentUserData.ninVerified) missing.push('NIN verification');
