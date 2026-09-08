@@ -325,22 +325,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Notification bell is now a live dropdown — wired via initNotificationBell() in onAuthStateChanged above.
 
     const sidebarTabs = document.querySelectorAll('.sidebar-menu li');
-    sidebarTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const targetTab = tab.getAttribute('data-tab');
-            const routeMap = {
-                home: 'client-dashboard.html',
-                post: 'post-gig.html',
-                space: 'space.html',
-                disputes: 'disputes.html',
-                profile: 'company-profile.html',
-            };
-            if (targetTab === 'contracts') {
-                document.getElementById('contracts')?.scrollIntoView({ behavior: 'smooth' });
-            } else if (routeMap[targetTab]) {
-                window.location.href = routeMap[targetTab];
-            }
-            if (window.innerWidth <= 900) sidebar.classList.remove('mobile-open');
-        });
+   sidebarTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        const targetTab = tab.getAttribute('data-tab');
+        const externalRoute = tab.getAttribute('data-route');   // ← added
+        const routeMap = {
+            home: 'client-dashboard.html',
+            post: 'post-gig.html',
+            space: 'space.html',
+            disputes: 'disputes.html',
+            profile: 'company-profile.html',
+        };
+        if (externalRoute) {                                    // ← added
+            window.open(externalRoute, '_blank', 'noopener');    // ← added
+        } else if (targetTab === 'contracts') {
+            document.getElementById('contracts')?.scrollIntoView({ behavior: 'smooth' });
+        } else if (routeMap[targetTab]) {
+            window.location.href = routeMap[targetTab];
+        }
+        if (window.innerWidth <= 900) sidebar.classList.remove('mobile-open');
+    });
     });
 });
