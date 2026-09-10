@@ -6,7 +6,7 @@ import {
     auth, db, onAuthStateChanged, signOut,
     doc, getDoc, updateDoc,
     collection, query, where, orderBy, limit, getDocs,
-    runTransaction, serverTimestamp,
+    runTransaction, serverTimestamp, arrayUnion,
 } from './firebase.js';
 
 let currentUser = null;
@@ -283,12 +283,19 @@ function showRentGate() {
                         amountNaira: plan.price,
                         metadata: { purpose: 'rent', plan: plan.name, uid: currentUser.uid },
                     });
+                } else if (currentUserData.hasUsedFreeRent) {
+                    alert('You\'ve already claimed a free rent plan. Please pick a paid plan.');
+                    return;
                 }
                 await updateDoc(doc(db, 'users', currentUser.uid), {
                     'rentStatus.plan': plan.name,
                     'rentStatus.amountOwed': 0,
                     'rentStatus.dueDate': dueDate,
                 });
+                if (plan.price === 0) {
+                    await updateDoc(doc(db, 'users', currentUser.uid), { hasUsedFreeRent: true });
+                    currentUserData.hasUsedFreeRent = true;
+                }
                 currentUserData.rentStatus = { plan: plan.name, amountOwed: 0, dueDate };
                 gate.remove();
                 // Small toast then re-trigger claim
@@ -309,6 +316,14 @@ function showRentGate() {
 
 async function claimGig(gigId) {
     modalOverlay.classList.remove('active');
+
+    // ── ONE-CLAIM-PER-GIG CHECK ───────────────────────────────────
+    const alreadyClaimed = (currentUserData.claimedGigIds || []).includes(gigId);
+    if (alreadyClaimed) {
+        showModal('Already Claimed', 'You have already claimed this gig before. Each gig can only be claimed once per freelancer.', null);
+        return;
+    }
+    // ─────────────────────────────────────────────────────────────
 
     // ── RENT CHECK ────────────────────────────────────────────────
     const rent = currentUserData.rentStatus || {};
@@ -406,6 +421,10 @@ async function doClaimTransaction(gigId, gigData) {
 
         t.update(gigRef, { status: 'claimed', claimedBy: currentUser.uid, timerStart: serverTimestamp() });
 
+        // Record this gig as claimed by this freelancer — prevents re-claiming
+        const userRef = doc(db, 'users', currentUser.uid);
+        t.update(userRef, { claimedGigIds: arrayUnion(gigId) });
+
         const contractRef = doc(collection(db, 'contracts'));
         t.set(contractRef, {
             gigId,
@@ -424,6 +443,8 @@ async function doClaimTransaction(gigId, gigData) {
     });
 
     showModal('Job Claimed! 🎉', 'You\'ve claimed this job. It\'s now in your Active Contracts and the timer has started.', () => window.location.href = 'index.html#contracts');
+    // Update local cache so same-session re-claim attempt is also blocked
+    currentUserData.claimedGigIds = [...(currentUserData.claimedGigIds || []), gigId];
 }
 
 // Paystack wrapper for space.js (no dependency on paystack.js import)
@@ -488,12 +509,15 @@ function payWithPaystackSpace({ email, amountNaira, metadata }) {
             const isSaved = saved.includes(fl.id);
             const initial = (fl.fullName || '?').trim().charAt(0).toUpperCase();
             const skills = Array.isArray(fl.skills) ? fl.skills.join(', ') : (fl.skills || '');
+            const avatarHtml = fl.avatarUrl
+                ? `<img src="${escapeHtml(fl.avatarUrl)}" alt="${escapeHtml(fl.fullName || '')}" loading="lazy">`
+                : initial;
             const card = document.createElement('div');
             card.className = 'listing-card';
             card.innerHTML = `
                 <div class="listing-top">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="listing-avatar">${initial}</div>
+                        <div class="listing-avatar">${avatarHtml}</div>
                         <div>
                             <div class="listing-title">${escapeHtml(fl.fullName || 'Freelancer')}</div>
                             <div class="listing-sub">${escapeHtml(fl.location || '—')} · Trust ${fl.trustScore ?? 100}</div>
@@ -530,8 +554,12 @@ function payWithPaystackSpace({ email, amountNaira, metadata }) {
     function openFreelancerPreview(fl) {
         const skills = Array.isArray(fl.skills) ? fl.skills.join(', ') : (fl.skills || '—');
         const box = document.createElement('div');
+        const modalAvatar = fl.avatarUrl
+            ? `<img src="${escapeHtml(fl.avatarUrl)}" alt="${escapeHtml(fl.fullName || '')}" style="width:68px;height:68px;border-radius:50%;object-fit:cover;border:2px solid var(--border-color);">`
+            : `<div style="width:68px;height:68px;border-radius:50%;background:var(--accent-gradient);color:white;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;">${(fl.fullName||'?').charAt(0).toUpperCase()}</div>`;
         box.innerHTML = `
-            <p style="margin-bottom:6px;"><strong>${escapeHtml(fl.fullName)}</strong></p>
+            <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:14px;">${modalAvatar}</div>
+            <p style="margin-bottom:6px;text-align:center;"><strong>${escapeHtml(fl.fullName)}</strong></p>
             <p style="margin-bottom:6px;">Location: ${escapeHtml(fl.location || '—')}</p>
             <p style="margin-bottom:6px;">Experience: ${fl.experience ?? '—'} years</p>
             <p style="margin-bottom:6px;">Skills: ${escapeHtml(skills)}</p>

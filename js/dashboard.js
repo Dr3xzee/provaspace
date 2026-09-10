@@ -192,7 +192,12 @@ document.addEventListener('click', (e) => {
         const picker = document.getElementById('rentGatePlanPicker');
         let selectedIdx = 0;
 
-        plans.forEach((p, i) => {
+        // Hide free plans if user has already claimed one
+        const availablePlans = currentUserData.hasUsedFreeRent
+            ? plans.filter(p => p.price > 0)
+            : plans;
+
+        availablePlans.forEach((p, i) => {
             const priceLabel = p.price === 0
                 ? '<span style="color:var(--accent-green);font-weight:800;">Free</span>'
                 : formatNaira(p.price);
@@ -230,12 +235,19 @@ document.addEventListener('click', (e) => {
                         amountNaira: plan.price,
                         metadata: { purpose: 'rent', plan: plan.name, uid: currentUser.uid },
                     });
+                } else if (currentUserData.hasUsedFreeRent) {
+                    showModal('Already Used', "You've already claimed a free rent plan. Pick a paid plan to continue.", null);
+                    return;
                 }
                 await updateDoc(doc(db, 'users', currentUser.uid), {
                     'rentStatus.plan': plan.name,
                     'rentStatus.amountOwed': 0,
                     'rentStatus.dueDate': dueDate,
                 });
+                if (plan.price === 0) {
+                    await updateDoc(doc(db, 'users', currentUser.uid), { hasUsedFreeRent: true });
+                    currentUserData.hasUsedFreeRent = true;
+                }
                 currentUserData.rentStatus = { plan: plan.name, amountOwed: 0, dueDate };
                 gate.remove();
                 populateRentCard();
@@ -453,12 +465,19 @@ document.addEventListener('click', (e) => {
                         amountNaira: plan.price,
                         metadata: { purpose: 'rent', plan: plan.name, uid: currentUser.uid },
                     });
+                } else if (currentUserData.hasUsedFreeRent) {
+                    showModal('Already Used', "You've already claimed a free rent plan. Please pick a paid plan.", null);
+                    return;
                 }
                 await updateDoc(doc(db, 'users', currentUser.uid), {
                     'rentStatus.plan': plan.name,
                     'rentStatus.amountOwed': 0,
                     'rentStatus.dueDate': dueDate,
                 });
+                if (plan.price === 0) {
+                    await updateDoc(doc(db, 'users', currentUser.uid), { hasUsedFreeRent: true });
+                    currentUserData.hasUsedFreeRent = true;
+                }
                 currentUserData.rentStatus = { plan: plan.name, amountOwed: 0, dueDate };
                 populateRentCard();
                 showModal('Rent Updated ✓', `${plan.name} plan ${plan.price === 0 ? 'activated free' : 'paid'}. Due date extended to ${dueDate.toLocaleDateString()}.`, null);

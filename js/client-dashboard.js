@@ -237,7 +237,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---------- TAX PASS PURCHASE ----------
     document.getElementById('buyTaxPassBtn').addEventListener('click', () => {
-        const tiers = priceSettings.taxPassTiers || [];
+        const allTiers = priceSettings.taxPassTiers || [];
+
+        // Hide free tiers if client already claimed one
+        const tiers = currentUserData.hasUsedFreeTaxPass
+            ? allTiers.filter(t => t.price > 0)
+            : allTiers;
+
+        if (tiers.length === 0) {
+            showModal('No Plans Available', "You've already used the free tax pass. Contact support or wait for admin to add paid tiers.", null);
+            return;
+        }
+
         const box = document.createElement('div');
         box.innerHTML = `<p style="margin-bottom:10px;">Choose a tax pass tier (admin-set pricing):</p>` +
             tiers.map((t, i) => {
@@ -251,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </label>
             `}).join('');
         showModal('Buy Tax Pass', box, null);
-        // Update button label based on selected tier price
+
         function updatePayBtnLabel() {
             const selectedIdx = parseInt(box.querySelector('input[name="taxTier"]:checked')?.value ?? '0', 10);
             const tier = tiers[selectedIdx];
@@ -266,21 +277,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const tier = tiers[selectedIdx];
             try {
                 if (tier.price > 0) {
-                    // Paid tier — use Paystack
                     await payWithPaystack({
                         email: currentUserData.email,
                         amountNaira: tier.price,
                         metadata: { purpose: 'taxPass', tier: tier.name, uid: currentUser.uid },
                     });
+                } else if (currentUserData.hasUsedFreeTaxPass) {
+                    showModal('Already Used', "You've already claimed a free tax pass. Please select a paid tier.", null);
+                    return;
                 }
-                // Free (price=0) or paid and successful — activate pass
+                const newGigLimit = (currentUserData.taxPass?.gigLimit || 0) + tier.gigLimit;
+                const newRemaining = (currentUserData.taxPass?.gigsRemaining || 0) + tier.gigLimit;
                 await updateDoc(doc(db, 'users', currentUser.uid), {
                     'taxPass.tier': tier.name,
-                    'taxPass.gigLimit': (currentUserData.taxPass?.gigLimit || 0) + tier.gigLimit,
-                    'taxPass.gigsRemaining': (currentUserData.taxPass?.gigsRemaining || 0) + tier.gigLimit,
+                    'taxPass.gigLimit': newGigLimit,
+                    'taxPass.gigsRemaining': newRemaining,
                 });
-                const newRemaining = (currentUserData.taxPass?.gigsRemaining || 0) + tier.gigLimit;
-                currentUserData.taxPass = { tier: tier.name, gigLimit: (currentUserData.taxPass?.gigLimit || 0) + tier.gigLimit, gigsRemaining: newRemaining };
+                if (tier.price === 0) {
+                    await updateDoc(doc(db, 'users', currentUser.uid), { hasUsedFreeTaxPass: true });
+                    currentUserData.hasUsedFreeTaxPass = true;
+                }
+                currentUserData.taxPass = { tier: tier.name, gigLimit: newGigLimit, gigsRemaining: newRemaining };
                 populateTaxPassCard();
                 showModal('Tax Pass Active ✓', `${tier.gigLimit} slot(s) added. You now have ${newRemaining} gig post(s) remaining.${tier.price === 0 ? ' (Admin-granted free pass)' : ''}`, null);
             } catch (err) {
@@ -325,25 +342,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Notification bell is now a live dropdown — wired via initNotificationBell() in onAuthStateChanged above.
 
     const sidebarTabs = document.querySelectorAll('.sidebar-menu li');
-   sidebarTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        const targetTab = tab.getAttribute('data-tab');
-        const externalRoute = tab.getAttribute('data-route');   // ← added
-        const routeMap = {
-            home: 'client-dashboard.html',
-            post: 'post-gig.html',
-            space: 'space.html',
-            disputes: 'disputes.html',
-            profile: 'company-profile.html',
-        };
-        if (externalRoute) {                                    // ← added
-            window.open(externalRoute, '_blank', 'noopener');    // ← added
-        } else if (targetTab === 'contracts') {
-            document.getElementById('contracts')?.scrollIntoView({ behavior: 'smooth' });
-        } else if (routeMap[targetTab]) {
-            window.location.href = routeMap[targetTab];
-        }
-        if (window.innerWidth <= 900) sidebar.classList.remove('mobile-open');
-    });
+    sidebarTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.getAttribute('data-tab');
+            const routeMap = {
+                home: 'client-dashboard.html',
+                post: 'post-gig.html',
+                space: 'space.html',
+                disputes: 'disputes.html',
+                profile: 'company-profile.html',
+            };
+            if (targetTab === 'contracts') {
+                document.getElementById('contracts')?.scrollIntoView({ behavior: 'smooth' });
+            } else if (routeMap[targetTab]) {
+                window.location.href = routeMap[targetTab];
+            }
+            if (window.innerWidth <= 900) sidebar.classList.remove('mobile-open');
+        });
     });
 });
