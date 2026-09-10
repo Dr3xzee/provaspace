@@ -345,6 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebarTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const targetTab = tab.getAttribute('data-tab');
+            const isExternal = tab.getAttribute('data-external') === 'true';
+            const route = tab.getAttribute('data-route');
+
+            if (isExternal && route && route !== '#') {
+                window.open(route, '_blank');
+                return;
+            }
+
             const routeMap = {
                 home: 'client-dashboard.html',
                 post: 'post-gig.html',
