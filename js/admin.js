@@ -7,6 +7,7 @@ import {
     doc, getDoc, setDoc, updateDoc,
     collection, query, where, getDocs, addDoc, serverTimestamp,
 } from './firebase.js';
+import { notifyUser } from './notify-helper.js';
 
 let currentUser = null;
 
@@ -307,7 +308,6 @@ async function loadVerifications() {
                 modalActionBtn.onclick = async () => {
                     const reason = document.getElementById('rejectNinReason').value.trim();
                     if (!reason) { alert('Please enter a reason.'); return; }
-                    modalOverlay.classList.remove('active');
                     try {
                         await updateDoc(doc(db, 'users', uid), { ninVerified: false, ninRejected: true, ninRejectionReason: reason });
                         await notifyUser(uid, {
@@ -315,9 +315,11 @@ async function loadVerifications() {
                             message: `Your NIN verification was rejected. Reason: ${reason}`,
                             type: 'nin_rejected', link: 'profile.html',
                         });
+                        modalOverlay.classList.remove('active');
                         showModal('Done', 'NIN rejected and user notified.', () => loadVerifications());
                     } catch (e) {
-                        showModal('Error', 'Could not reject NIN.', null);
+                        console.error(e);
+                        showModal('Error', `Could not reject NIN: ${e.message || e}`, null);
                     }
                 };
             });
@@ -392,7 +394,6 @@ async function loadVerifications() {
                 modalActionBtn.onclick = async () => {
                     const reason = document.getElementById('rejectCacReason').value.trim();
                     if (!reason) { alert('Please enter a reason.'); return; }
-                    modalOverlay.classList.remove('active');
                     try {
                         await updateDoc(doc(db, 'users', uid), { cacVerified: false, cacRejected: true, cacRejectionReason: reason });
                         await notifyUser(uid, {
@@ -400,9 +401,11 @@ async function loadVerifications() {
                             message: `Your CAC verification was rejected. Reason: ${reason}`,
                             type: 'cac_rejected', link: 'company-profile.html',
                         });
+                        modalOverlay.classList.remove('active');
                         showModal('Done', 'CAC rejected and company notified.', () => loadVerifications());
                     } catch (e) {
-                        showModal('Error', 'Could not reject CAC.', null);
+                        console.error(e);
+                        showModal('Error', `Could not reject CAC: ${e.message || e}`, null);
                     }
                 };
             });

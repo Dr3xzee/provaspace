@@ -482,20 +482,24 @@ function payWithPaystackSpace({ email, amountNaira, metadata }) {
     }
 
     async function loadFreelancers() {
-        const grid = document.getElementById('resultsGrid');
-        grid.innerHTML = '<p class="empty-state" style="display:block; grid-column:1/-1;">Loading freelancers...</p>';
-        try {
-            const q = query(collection(db, 'users'), where('role', '==', 'freelancer'));
-            const snap = await getDocs(q);
-            allResults = [];
-            snap.forEach(d => allResults.push({ id: d.id, ...d.data() }));
-            allResults.sort((a, b) => (b.trustScore || 0) - (a.trustScore || 0));
-            renderFreelancers(allResults);
-        } catch (err) {
-            console.error(err);
-            grid.innerHTML = '<p class="empty-state" style="display:block; grid-column:1/-1;">Could not load freelancers.</p>';
-        }
+    const grid = document.getElementById('resultsGrid');
+    grid.innerHTML = '<p class="empty-state" style="display:block; grid-column:1/-1;">Loading freelancers...</p>';
+    try {
+        const q = query(collection(db, 'users'), where('role', '==', 'freelancer'));
+        const snap = await getDocs(q);
+        allResults = [];
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.banned === true) return; // exclude banned users
+            allResults.push({ id: d.id, ...data });
+        });
+        allResults.sort((a, b) => (b.trustScore || 0) - (a.trustScore || 0));
+        renderFreelancers(allResults);
+    } catch (err) {
+        console.error(err);
+        grid.innerHTML = '<p class="empty-state" style="display:block; grid-column:1/-1;">Could not load freelancers.</p>';
     }
+}
 
     function renderFreelancers(list) {
         const grid = document.getElementById('resultsGrid');
