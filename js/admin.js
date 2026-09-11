@@ -245,8 +245,9 @@ async function loadVerifications() {
 
     try {
         const flSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'freelancer'), where('ninVerified', '==', false)));
-        freelancerBody.innerHTML = flSnap.empty ? '<tr><td colspan="5">No pending NIN verifications.</td></tr>' : '';
-        flSnap.forEach(d => {
+        const pendingFreelancers = flSnap.docs.filter(d => !d.data().ninRejected);
+        freelancerBody.innerHTML = pendingFreelancers.length === 0 ? '<tr><td colspan="6">No pending NIN verifications.</td></tr>' : '';
+        pendingFreelancers.forEach(d => {
             const u = d.data();
             const ninThumb = u.ninImageUrl
                 ? `<img src="${u.ninImageUrl}" alt="NIN" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);cursor:pointer;" data-fullimg="${u.ninImageUrl}">`
@@ -331,8 +332,9 @@ async function loadVerifications() {
 
     try {
         const clSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'client'), where('cacVerified', '==', false)));
-        clientBody.innerHTML = clSnap.empty ? '<tr><td colspan="4">No pending CAC verifications.</td></tr>' : '';
-        clSnap.forEach(d => {
+        const pendingClients = clSnap.docs.filter(d => !d.data().cacRejected);
+        clientBody.innerHTML = pendingClients.length === 0 ? '<tr><td colspan="6">No pending CAC verifications.</td></tr>' : '';
+        pendingClients.forEach(d => {
             const u = d.data();
             const cacThumb = u.cacImageUrl
                 ? `<img src="${u.cacImageUrl}" alt="CAC" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);cursor:pointer;" data-fullimg="${u.cacImageUrl}">`
