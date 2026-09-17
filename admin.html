@@ -151,8 +151,9 @@
 
                 <!-- VERIFICATIONS -->
                 <section class="admin-section" id="section-verifications">
+                    <!-- PENDING NIN -->
                     <div class="admin-panel">
-                        <h2><i class="fa-solid fa-user-tie"></i> Freelancer NIN Verifications Pending</h2>
+                        <h2><i class="fa-solid fa-user-tie"></i> Freelancer NIN — Pending <span id="ninPendingCount" style="font-size:0.8rem;font-weight:400;color:var(--text-secondary);"></span></h2>
                         <div class="table-wrap">
                             <table class="data-table">
                                 <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>NIN Doc</th><th>Details</th><th>Actions</th></tr></thead>
@@ -160,12 +161,36 @@
                             </table>
                         </div>
                     </div>
-                    <div class="admin-panel">
-                        <h2><i class="fa-solid fa-building"></i> Company CAC Verifications Pending</h2>
+
+                    <!-- APPROVED NIN -->
+                    <div class="admin-panel" style="margin-top:20px;">
+                        <h2><i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Freelancer NIN — Approved <span id="ninApprovedCount" style="font-size:0.8rem;font-weight:400;color:var(--text-secondary);"></span></h2>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>NIN Doc</th><th>Details</th><th>Action</th></tr></thead>
+                                <tbody id="freelancerApprovedBody"><tr><td colspan="6">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PENDING CAC -->
+                    <div class="admin-panel" style="margin-top:20px;">
+                        <h2><i class="fa-solid fa-building"></i> Company CAC — Pending <span id="cacPendingCount" style="font-size:0.8rem;font-weight:400;color:var(--text-secondary);"></span></h2>
                         <div class="table-wrap">
                             <table class="data-table">
                                 <thead><tr><th>Company</th><th>Email</th><th>Phone</th><th>CAC Doc</th><th>Details</th><th>Actions</th></tr></thead>
                                 <tbody id="clientVerifyBody"><tr><td colspan="6">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- APPROVED CAC -->
+                    <div class="admin-panel" style="margin-top:20px;">
+                        <h2><i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Company CAC — Approved <span id="cacApprovedCount" style="font-size:0.8rem;font-weight:400;color:var(--text-secondary);"></span></h2>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead><tr><th>Company</th><th>Email</th><th>Phone</th><th>CAC Doc</th><th>Details</th><th>Action</th></tr></thead>
+                                <tbody id="clientApprovedBody"><tr><td colspan="6">Loading...</td></tr></tbody>
                             </table>
                         </div>
                     </div>

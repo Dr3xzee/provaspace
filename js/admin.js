@@ -108,8 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('statDisputes').textContent = disputesSnap.size;
 
             let pending = 0;
-            freelancersSnap.forEach(d => { if (!d.data().ninVerified) pending++; });
-            clientsSnap.forEach(d => { if (!d.data().cacVerified) pending++; });
+            freelancersSnap.forEach(d => {
+                const u = d.data();
+                if (!u.ninVerified && !u.ninRejected) pending++;
+            });
+            clientsSnap.forEach(d => {
+                const u = d.data();
+                if (!u.cacVerified && !u.cacRejected) pending++;
+            });
             document.getElementById('statPending').textContent = pending;
 
             let overdue = 0;
@@ -215,72 +221,76 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // ---------- VERIFICATIONS ----------
 async function loadVerifications() {
-    const freelancerBody = document.getElementById('freelancerVerifyBody');
-    const clientBody = document.getElementById('clientVerifyBody');
+    const freelancerBody     = document.getElementById('freelancerVerifyBody');
+    const freelancerApproved = document.getElementById('freelancerApprovedBody');
+    const clientBody         = document.getElementById('clientVerifyBody');
+    const clientApproved     = document.getElementById('clientApprovedBody');
 
-    // Helper — renders a <dl> of all fields in a user doc
     function buildUserDetailNode(data) {
         const dl = document.createElement('dl');
-        dl.style.cssText = 'display:grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size:0.82rem; margin:0;';
-        const skip = new Set(['password', 'passwordHash']); // omit sensitive-looking fields
+        dl.style.cssText = 'display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;font-size:0.82rem;margin:0;';
+        const skip = new Set(['password','passwordHash']);
         for (const [key, val] of Object.entries(data)) {
             if (skip.has(key)) continue;
             let display = val;
             if (val && typeof val.toDate === 'function') display = val.toDate().toLocaleString();
             else if (val && typeof val === 'object') display = JSON.stringify(val, null, 2);
-
             const dt = document.createElement('dt');
-            dt.style.cssText = 'color:var(--text-secondary); font-weight:500; word-break:break-all;';
+            dt.style.cssText = 'color:var(--text-secondary);font-weight:500;word-break:break-all;';
             dt.textContent = key;
-
             const dd = document.createElement('dd');
-            dd.style.cssText = 'margin:0; word-break:break-all; color:var(--text-primary);';
+            dd.style.cssText = 'margin:0;word-break:break-all;color:var(--text-primary);';
             dd.textContent = String(display ?? '—');
-
-            dl.appendChild(dt);
-            dl.appendChild(dd);
+            dl.appendChild(dt); dl.appendChild(dd);
         }
         return dl;
     }
 
+    function thumbHtml(url, alt) {
+        return url
+            ? `<img src="${url}" alt="${alt}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);cursor:pointer;" data-fullimg="${url}">`
+            : `<span style="color:var(--text-secondary);font-size:0.78rem;">No image</span>`;
+    }
+
+    function wireLightbox(tbody) {
+        tbody.querySelectorAll('[data-fullimg]').forEach(img => {
+            img.addEventListener('click', () => {
+                const box = document.createElement('div');
+                box.innerHTML = `<img src="${img.dataset.fullimg}" alt="document" style="width:100%;border-radius:10px;object-fit:contain;max-height:70vh;">`;
+                showModal('Document', box, null);
+            });
+        });
+    }
+
+    // ── FREELANCERS ──────────────────────────────────────────────
     try {
-        const flSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'freelancer'), where('ninVerified', '==', false)));
-        const pendingFreelancers = flSnap.docs.filter(d => !d.data().ninRejected);
-        freelancerBody.innerHTML = pendingFreelancers.length === 0 ? '<tr><td colspan="6">No pending NIN verifications.</td></tr>' : '';
-        pendingFreelancers.forEach(d => {
+        const flSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'freelancer')));
+        const pending  = flSnap.docs.filter(d => !d.data().ninVerified && !d.data().ninRejected);
+        const approved = flSnap.docs.filter(d =>  d.data().ninVerified);
+
+        document.getElementById('ninPendingCount').textContent  = `(${pending.length})`;
+        document.getElementById('ninApprovedCount').textContent = `(${approved.length})`;
+
+        // PENDING
+        freelancerBody.innerHTML = pending.length === 0 ? '<tr><td colspan="6">No pending NIN verifications.</td></tr>' : '';
+        pending.forEach(d => {
             const u = d.data();
-            const ninThumb = u.ninImageUrl
-                ? `<img src="${u.ninImageUrl}" alt="NIN" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);cursor:pointer;" data-fullimg="${u.ninImageUrl}">`
-                : `<span style="color:var(--text-secondary);font-size:0.78rem;">No image</span>`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${escapeHtml(u.fullName)}</td>
-                <td>${escapeHtml(u.email)}</td>
-                <td>${escapeHtml(u.phone)}</td>
-                <td>${ninThumb}</td>
-                <td><button class="table-action-btn secondary" data-more-freelancer="${d.id}">More</button></td>
+                <td>${escapeHtml(u.fullName)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.phone)}</td>
+                <td>${thumbHtml(u.ninImageUrl, 'NIN')}</td>
+                <td><button class="table-action-btn secondary" data-more-fl="${d.id}">More</button></td>
                 <td>
                     <button class="table-action-btn" data-verify-freelancer="${d.id}">Verify</button>
                     <button class="table-action-btn danger" data-reject-freelancer="${d.id}" data-name="${escapeHtml(u.fullName || '')}">Reject</button>
-                </td>
-            `;
+                </td>`;
             freelancerBody.appendChild(tr);
         });
-
-        // Full image lightbox on thumbnail click
-        freelancerBody.querySelectorAll('[data-fullimg]').forEach(img => {
-            img.addEventListener('click', () => {
-                const box = document.createElement('div');
-                box.innerHTML = `<img src="${img.dataset.fullimg}" alt="NIN document" style="width:100%;border-radius:10px;object-fit:contain;max-height:70vh;">`;
-                showModal('NIN Document', box, null);
-            });
-        });
-
-        freelancerBody.querySelectorAll('[data-more-freelancer]').forEach(btn => {
+        wireLightbox(freelancerBody);
+        freelancerBody.querySelectorAll('[data-more-fl]').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const snap = await getDoc(doc(db, 'users', btn.dataset.moreFreelancer));
-                if (!snap.exists()) return;
-                showModal(`User — ${snap.data().fullName || snap.id}`, buildUserDetailNode(snap.data()), null);
+                const s = await getDoc(doc(db, 'users', btn.dataset.moreFl));
+                if (s.exists()) showModal(`User — ${s.data().fullName || s.id}`, buildUserDetailNode(s.data()), null);
             });
         });
         freelancerBody.querySelectorAll('[data-verify-freelancer]').forEach(btn => {
@@ -300,10 +310,9 @@ async function loadVerifications() {
                 const name = btn.dataset.name || 'Freelancer';
                 const box = document.createElement('div');
                 box.innerHTML = `
-                    <p style="margin-bottom:10px;">Set a rejection reason for <strong>${escapeHtml(name)}</strong>. This will be sent to them as a notification.</p>
+                    <p style="margin-bottom:10px;">Set a rejection reason for <strong>${escapeHtml(name)}</strong>.</p>
                     <textarea id="rejectNinReason" rows="3" placeholder="e.g. NIN image is blurry, please re-upload a clearer photo."
-                        style="width:100%;padding:10px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.9rem;resize:vertical;background:var(--bg-main);color:var(--text-primary);"></textarea>
-                `;
+                        style="width:100%;padding:10px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.9rem;resize:vertical;background:var(--bg-main);color:var(--text-primary);"></textarea>`;
                 showModal('Reject NIN — Add Reason', box, null);
                 modalActionBtn.textContent = 'Reject & Notify';
                 modalActionBtn.onclick = async () => {
@@ -325,49 +334,61 @@ async function loadVerifications() {
                 };
             });
         });
-    } catch (err) {
-        console.error(err);
-        freelancerBody.innerHTML = '<tr><td colspan="5">Could not load — needs composite index on users(role, ninVerified).</td></tr>';
-    }
 
-    try {
-        const clSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'client'), where('cacVerified', '==', false)));
-        const pendingClients = clSnap.docs.filter(d => !d.data().cacRejected);
-        clientBody.innerHTML = pendingClients.length === 0 ? '<tr><td colspan="6">No pending CAC verifications.</td></tr>' : '';
-        pendingClients.forEach(d => {
+        // APPROVED
+        freelancerApproved.innerHTML = approved.length === 0 ? '<tr><td colspan="6">No approved NIN verifications yet.</td></tr>' : '';
+        approved.forEach(d => {
             const u = d.data();
-            const cacThumb = u.cacImageUrl
-                ? `<img src="${u.cacImageUrl}" alt="CAC" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);cursor:pointer;" data-fullimg="${u.cacImageUrl}">`
-                : `<span style="color:var(--text-secondary);font-size:0.78rem;">No image</span>`;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${escapeHtml(u.companyName || u.fullName)}</td>
-                <td>${escapeHtml(u.email)}</td>
-                <td>${escapeHtml(u.phone)}</td>
-                <td>${cacThumb}</td>
-                <td><button class="table-action-btn secondary" data-more-client="${d.id}">More</button></td>
-                <td>
-                    <button class="table-action-btn" data-verify-client="${d.id}">Verify</button>
-                    <button class="table-action-btn danger" data-reject-client="${d.id}" data-name="${escapeHtml(u.companyName || u.fullName || '')}">Reject</button>
-                </td>
-            `;
-            clientBody.appendChild(tr);
+                <td>${escapeHtml(u.fullName)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.phone)}</td>
+                <td>${thumbHtml(u.ninImageUrl, 'NIN')}</td>
+                <td><button class="table-action-btn secondary" data-more-fl-ap="${d.id}">More</button></td>
+                <td><span class="badge badge-green">Verified ✓</span></td>`;
+            freelancerApproved.appendChild(tr);
         });
-
-        // Full image lightbox on thumbnail click
-        clientBody.querySelectorAll('[data-fullimg]').forEach(img => {
-            img.addEventListener('click', () => {
-                const box = document.createElement('div');
-                box.innerHTML = `<img src="${img.dataset.fullimg}" alt="CAC document" style="width:100%;border-radius:10px;object-fit:contain;max-height:70vh;">`;
-                showModal('CAC Document', box, null);
+        wireLightbox(freelancerApproved);
+        freelancerApproved.querySelectorAll('[data-more-fl-ap]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const s = await getDoc(doc(db, 'users', btn.dataset.moreFlAp));
+                if (s.exists()) showModal(`User — ${s.data().fullName || s.id}`, buildUserDetailNode(s.data()), null);
             });
         });
 
-        clientBody.querySelectorAll('[data-more-client]').forEach(btn => {
+    } catch (err) {
+        console.error(err);
+        freelancerBody.innerHTML = '<tr><td colspan="6">Could not load — check Firestore index on users(role).</td></tr>';
+    }
+
+    // ── CLIENTS ──────────────────────────────────────────────────
+    try {
+        const clSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'client')));
+        const pending  = clSnap.docs.filter(d => !d.data().cacVerified && !d.data().cacRejected);
+        const approved = clSnap.docs.filter(d =>  d.data().cacVerified);
+
+        document.getElementById('cacPendingCount').textContent  = `(${pending.length})`;
+        document.getElementById('cacApprovedCount').textContent = `(${approved.length})`;
+
+        // PENDING
+        clientBody.innerHTML = pending.length === 0 ? '<tr><td colspan="6">No pending CAC verifications.</td></tr>' : '';
+        pending.forEach(d => {
+            const u = d.data();
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${escapeHtml(u.companyName || u.fullName)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.phone)}</td>
+                <td>${thumbHtml(u.cacImageUrl, 'CAC')}</td>
+                <td><button class="table-action-btn secondary" data-more-cl="${d.id}">More</button></td>
+                <td>
+                    <button class="table-action-btn" data-verify-client="${d.id}">Verify</button>
+                    <button class="table-action-btn danger" data-reject-client="${d.id}" data-name="${escapeHtml(u.companyName || u.fullName || '')}">Reject</button>
+                </td>`;
+            clientBody.appendChild(tr);
+        });
+        wireLightbox(clientBody);
+        clientBody.querySelectorAll('[data-more-cl]').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const snap = await getDoc(doc(db, 'users', btn.dataset.moreClient));
-                if (!snap.exists()) return;
-                showModal(`User — ${snap.data().companyName || snap.data().fullName || snap.id}`, buildUserDetailNode(snap.data()), null);
+                const s = await getDoc(doc(db, 'users', btn.dataset.moreCl));
+                if (s.exists()) showModal(`User — ${s.data().companyName || s.data().fullName || s.id}`, buildUserDetailNode(s.data()), null);
             });
         });
         clientBody.querySelectorAll('[data-verify-client]').forEach(btn => {
@@ -387,10 +408,9 @@ async function loadVerifications() {
                 const name = btn.dataset.name || 'Company';
                 const box = document.createElement('div');
                 box.innerHTML = `
-                    <p style="margin-bottom:10px;">Set a rejection reason for <strong>${escapeHtml(name)}</strong>. This will be sent to them as a notification.</p>
+                    <p style="margin-bottom:10px;">Set a rejection reason for <strong>${escapeHtml(name)}</strong>.</p>
                     <textarea id="rejectCacReason" rows="3" placeholder="e.g. CAC document is expired, please upload a current certificate."
-                        style="width:100%;padding:10px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.9rem;resize:vertical;background:var(--bg-main);color:var(--text-primary);"></textarea>
-                `;
+                        style="width:100%;padding:10px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.9rem;resize:vertical;background:var(--bg-main);color:var(--text-primary);"></textarea>`;
                 showModal('Reject CAC — Add Reason', box, null);
                 modalActionBtn.textContent = 'Reject & Notify';
                 modalActionBtn.onclick = async () => {
@@ -412,11 +432,33 @@ async function loadVerifications() {
                 };
             });
         });
+
+        // APPROVED
+        clientApproved.innerHTML = approved.length === 0 ? '<tr><td colspan="6">No approved CAC verifications yet.</td></tr>' : '';
+        approved.forEach(d => {
+            const u = d.data();
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${escapeHtml(u.companyName || u.fullName)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.phone)}</td>
+                <td>${thumbHtml(u.cacImageUrl, 'CAC')}</td>
+                <td><button class="table-action-btn secondary" data-more-cl-ap="${d.id}">More</button></td>
+                <td><span class="badge badge-green">Verified ✓</span></td>`;
+            clientApproved.appendChild(tr);
+        });
+        wireLightbox(clientApproved);
+        clientApproved.querySelectorAll('[data-more-cl-ap]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const s = await getDoc(doc(db, 'users', btn.dataset.moreClAp));
+                if (s.exists()) showModal(`User — ${s.data().companyName || s.data().fullName || s.id}`, buildUserDetailNode(s.data()), null);
+            });
+        });
+
     } catch (err) {
         console.error(err);
-        clientBody.innerHTML = '<tr><td colspan="4">Could not load — needs composite index on users(role, cacVerified).</td></tr>';
+        clientBody.innerHTML = '<tr><td colspan="6">Could not load — check Firestore index on users(role).</td></tr>';
     }
 }
+
 
     // ---------- DISPUTES ----------
     async function loadDisputes() {
